@@ -166,3 +166,4 @@ cython_debug/
 
 # Ignore data files
 data/
+output/
