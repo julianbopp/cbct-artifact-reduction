@@ -1,5 +1,6 @@
 import os
 import shutil
+import brainglobe_utils as bg_utils
 
 # Path to the directory containing the mandible1 files
 
