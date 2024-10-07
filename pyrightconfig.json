@@ -1,0 +1,6 @@
+{
+    "executionEnvironments": [
+        {"root": "src"}
+    ],
+    "stubPath": "out",
+}
