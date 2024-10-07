@@ -2,85 +2,19 @@
 
 from brainglobe_utils.IO.image import load, save
 import numpy as np
-import tarfile
 import os
-
-
-def get_scanner_from_num(num: int):
-    orig_num = num
-    scanner = ""
-    material = ""
-    implants = ""
-    fov = ""
-
-    if ((num - 1) // 20) % 4 == 0:
-        scanner = "axeos"
-    elif ((num - 1) // 20) % 4 == 1:
-        scanner = "accuitomo"
-    elif ((num - 1) // 20) % 4 == 2:
-        scanner = "planmeca"
-    elif ((num - 1) // 20) % 4 == 3:
-        scanner = "x800"
-
-    if num % 10 == 0:
-        material = ""
-        implants = "0"
-    elif (num % 10) % 3 == 1:
-        implants = "3"
-    elif (num % 10) % 3 == 2:
-        implants = "2"
-    elif (num % 10) % 3 == 0:
-        implants = "1"
-
-    if ((num - 1) % 10) // 3 == 0:
-        material = "ti"
-    elif ((num - 1) % 10) // 3 == 1:
-        material = "tizr"
-    elif ((num - 1) % 10) // 3 == 2:
-        material = "zr"
-
-    if ((num - 1) // 10) % 2 == 0:
-        fov = "small"
-    elif ((num - 1) // 10) % 2 == 1:
-        fov = "large"
-
-    print(
-        f"Number: {orig_num}, Scanner: {scanner}, Material: {material}, Implants: {implants}, FOV: {fov}"
-    )
-    # return orig_num scanner, material, implants
-
-
-# Process tif data
-def tif_to_nifti(input_path: str, output_path: str):
-    # Load the data
-    data = load.load_img_stack(input_path, 1, 1, 1)
-    # Save the data
-    save.to_nii(data, output_path)
-
-
-# Merge multiple raw files into one nifti file
-def raws_to_nifti(filenames: list[str], output_path: str):
-    pass
-    # volume =
-    # Load the data
-    # data =
-    # Save the data
-    # save.to_nii(data, output_path)
-
-
-def extract_tar_gz(tar_gz_file: str, output_path: str):
-    file = tarfile.open(tar_gz_file)
-    # print(file.getnames())
-    file.extractall(output_path)
-    file.close()
+from utils import DATA_DIR, OUTPUT_DIR
+from utils import get_scanner_from_num, extract_tar_gz, tif_to_nifti
+import nibabel as nib
+import matplotlib.pyplot as plt
 
 
 if __name__ == "__main__":
 
     # Define data and output folder paths
     script_dir = os.path.dirname(__file__)
-    output_dir = os.path.join(script_dir, "../output")
-    data_dir = os.path.join(script_dir, "../data")
+    output_dir = OUTPUT_DIR
+    data_dir = DATA_DIR
 
     # get list of folders in data_dir
     folders = [
@@ -95,57 +29,98 @@ if __name__ == "__main__":
     planmeca_folders = [f for f in folders if "Planmeca" in f]
 
     # Define which data to process
-    accuitomo = False
-    axeo = False
+    accuitomo = True
+    axeo = True
     planmeca = True
 
-    # Process Accuitomo data
-    # First get all tif file paths
-    for folder in accuitomo_folders:
-        if not accuitomo:
-            print("Skipping Accuitomo data")
-            break
-        else:
-            print("Processing Accuitomo data")
-        # Create folder in output directory
-        os.makedirs(os.path.join(output_dir, folder), exist_ok=True)
-        # Get list of files in folder
-        files = os.listdir(os.path.join(data_dir, folder))
-        # Join the data path with the file name from files and Capture.tif
-        tif_paths = [os.path.join(data_dir, folder, f, "Capture.tif") for f in files]
+    for folder in folders:
+        # Get list of files in folder, these should be foulders named with numbers
+        files = sorted(os.listdir(os.path.join(data_dir, folder)))
 
-        # Save all tif files as nifti
-        for index, tif_path in enumerate(tif_paths):
+        for f in files:
+            print(f)
+            # if f is .DS_Store, skip
+            if f == ".DS_Store":
+                continue
+            # if f already exists in output_dir, skip
+            elif os.path.exists(os.path.join(output_dir, f"{f}.nii.gz")):
+                print(f"Skipping {f}, already exists in output folder")
+                continue
+            else:
+                # Get scanner from number
+                _, scanner, _, _, _ = get_scanner_from_num(int(f))
 
-            tif_file = load.load_img_stack(tif_path, 1, 1, 1)
-            save.to_nii(
-                tif_file,
-                os.path.join(output_dir, os.path.basename(folder), f"{index}.nii.gz"),
-            )
+                if scanner == "accuitomo" or scanner == "x800":
+                    if not accuitomo:
+                        print("Skipping Accuitomo data")
+                        break
+                    else:
+                        print("Processing Accuitomo data")
+                    # Join the data path with the file name from files and Capture.tif
+                    tif_path = os.path.join(data_dir, folder, f, "Capture.tif")
 
-    # Process Axeos data
-    # First get all tif file paths
-    for folder in axeo_folders:
-        if not axeo:
-            print("Skipping Axeos data")
-            break
-        else:
-            print("Processing Axeos data")
-        os.makedirs(os.path.join(output_dir, folder), exist_ok=True)
-        # Get list of files in folder
-        files = os.listdir(os.path.join(data_dir, folder))
-        # Join the data path with the file name from files and Capture.tif
-        tif_paths = [
-            os.path.join(data_dir, folder, f, "correctedRawData.tif") for f in files
-        ]
+                    # Save all tif files as nifti, each file will have the name of its scan number
+                    tif_to_nifti(tif_path, os.path.join(output_dir, f"{f}.nii.gz"))
 
-        # Save all tif files as nifti
-        for index, tif_path in enumerate(tif_paths):
+                elif scanner == "axeos":
+                    if not axeo:
+                        print("Skipping Axeos data")
+                        break
+                    else:
+                        print("Processing Axeos data")
+                    # Join the data path with the file name from files and Capture.tif
+                    tif_path = os.path.join(data_dir, folder, f, "correctedRawData.tif")
 
-            tif_file = load.load_img_stack(tif_path, 1, 1, 1)
-            save.to_nii(
-                tif_file,
-                os.path.join(output_dir, os.path.basename(folder), f"{index}.nii.gz"),
-            )
+                    # Save all tif files as nifti
+                    tif_to_nifti(tif_path, os.path.join(output_dir, f"{f}.nii.gz"))
 
-    # Process Planmeca data
+                elif scanner == "planmeca":
+                    if not planmeca:
+                        print("Skipping Planmeca data")
+                        break
+                    else:
+                        print("Processing Planmeca data")
+
+                    # Get list of files in folder
+                    contents = os.listdir(os.path.join(data_dir, folder, f))
+                    for item in contents:
+                        if item.endswith(".tar.gz"):
+                            # Extract tar.gz files
+                            extract_tar_gz(
+                                os.path.join(data_dir, folder, f, item),
+                                os.path.join(data_dir, folder, f),
+                            )
+                            extracted_path = os.path.join(
+                                data_dir, folder, f, "pm3DData", item[0:-7], "corrected"
+                            )
+
+                            # Get all directories in extracted path
+                            extracted_frames = sorted(os.listdir(extracted_path))
+                            num_frames = len(extracted_frames)
+
+                            _, _, _, _, fov = get_scanner_from_num(int(f))
+                            if fov == "small":
+                                n, m = 840, 732
+                            else:
+                                n, m = 420, 736
+
+                            # Create tensor for all frames
+                            vol = np.zeros((m, n, num_frames))
+
+                            # Put all frames in tensor
+                            for index, frame in enumerate(extracted_frames):
+                                data = np.fromfile(
+                                    os.path.join(extracted_path, frame),
+                                    dtype=np.uint16,
+                                )
+                                data = np.rot90(np.reshape(data, (n, m)))
+                                vol[..., index] = data
+
+                            # Save tensor as nifti
+                            save.to_nii(vol, os.path.join(output_dir, f"{f}.nii.gz"))
+                            nifti_file = nib.nifti1.load(
+                                os.path.join(output_dir, f"{f}.nii.gz")
+                            )
+
+                    # Save all tif files as nifti
+                    # tif_to_nifti(tif_path, os.path.join(output_dir, f"{f}.nii.gz"))
