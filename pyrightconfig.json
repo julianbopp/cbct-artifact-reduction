@@ -3,4 +3,5 @@
         {"root": "src"}
     ],
     "stubPath": "out",
+    "reportPrivateImportUsage": false,
 }
