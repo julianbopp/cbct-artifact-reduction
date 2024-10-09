@@ -61,3 +61,12 @@ def tif_to_nifti(input_path: str, output_path: str):
     data = load.load_img_stack(input_path, 1, 1, 1)
     # Save the data
     save.to_nii(data, output_path)
+
+
+def visualize(img):
+    # Function used to normalize image before visualization with vizdom
+
+    _min = img.min()
+    _max = img.max()
+    normalized_img = (img - _min) / (_max - _min)
+    return normalized_img
