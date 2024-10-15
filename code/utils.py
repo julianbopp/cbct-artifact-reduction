@@ -1,6 +1,8 @@
 import os
 import tarfile
+import nibabel as nib
 from brainglobe_utils.IO.image import load, save
+import numpy as np
 
 # Save project root directory
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
@@ -27,13 +29,13 @@ def get_scanner_from_num(num: int):
 
     if num % 10 == 0:
         material = ""
-        implants = "0"
+        implants = 0
     elif (num % 10) % 3 == 1:
-        implants = "3"
+        implants = 3
     elif (num % 10) % 3 == 2:
-        implants = "2"
+        implants = 2
     elif (num % 10) % 3 == 0:
-        implants = "1"
+        implants = 1
 
     if ((num - 1) % 10) // 3 == 0:
         material = "ti"
@@ -63,10 +65,17 @@ def tif_to_nifti(input_path: str, output_path: str):
     save.to_nii(data, output_path)
 
 
-def visualize(img):
+def min_max_normalize(img):
     # Function used to normalize image before visualization with vizdom
 
     _min = img.min()
     _max = img.max()
     normalized_img = (img - _min) / (_max - _min)
     return normalized_img
+
+
+def nifti_to_numpy(nifti_path):
+    assert os.path.exists(nifti_path), f"{nifti_path} does not exist"
+    image = nib.Nifti1Image.from_filename(nifti_path)
+    np_array = np.array(image.dataobj)
+    return np_array
