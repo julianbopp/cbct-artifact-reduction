@@ -170,3 +170,5 @@ output/
 
 # Ignore stub files
 out/ 
+
+# Ignore config.yaml
