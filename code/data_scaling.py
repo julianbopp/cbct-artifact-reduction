@@ -1,20 +1,33 @@
 import os
-from utils import get_scanner_from_num, ROOT_DIR, DATA_DIR, OUTPUT_DIR
+from utils import OUTPUT_DIR, min_max_normalize, nifti_to_numpy, get_scanner_from_num
 import nibabel as nib
 import numpy as np
-
+import matplotlib.pyplot as plt
 import skimage.transform as skTrans
 
+processed_data = os.path.join(OUTPUT_DIR, "rotated")
+list_scans = sorted([f for f in os.listdir(processed_data) if f.endswith(".nii.gz")])
 
-processed_data = os.path.join(OUTPUT_DIR, "data")
-list_scans = os.listdir(processed_data)
 
 for scan in list_scans:
+    _, _, _, num_of_transplants, _ = get_scanner_from_num(int(scan[:-7]))
+    if num_of_transplants != 0:
+        print(f"{scan} is a transplant scan. Skipping.")
+        continue
+    else:
+        print(f"{scan} is a control scan. Processing.")
+    if os.path.exists(os.path.join(OUTPUT_DIR, "scaled", scan)):
+        print(f"{scan} already exists. Skipping.")
+        continue
     scan_path = os.path.join(processed_data, scan)
-    img = nib.load(scan_path).get_fdata()  # type: ignore
-    print(img.shape)
+    scan_nparray = nifti_to_numpy(scan_path)
+    print(f"Image shape: {scan_nparray.shape}")
+
     result1 = skTrans.resize(
-        img, (256, 256, img.shape[2]), order=1, preserve_range=True
+        scan_nparray, (256, 256, scan_nparray.shape[2]), preserve_range=True
     )
-    nibObject = nib.Nifti1Image(result1, np.eye(4))
-    nib.save(nibObject, os.path.join(OUTPUT_DIR, "scaled", scan))
+
+    print(f"Result shape: {result1.shape}")
+    scaledNiftiImage = nib.Nifti1Image(result1, affine=None)
+
+    nib.save(scaledNiftiImage, os.path.join(OUTPUT_DIR, "scaled", scan))
