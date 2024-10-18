@@ -5,10 +5,13 @@ from brainglobe_utils.IO.image import load, save
 import numpy as np
 
 # Save project root directory
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+ROOT_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
+)
 DATA_DIR = os.path.join(ROOT_DIR, "data")
 CODE_DIR = os.path.join(ROOT_DIR, "code")
 OUTPUT_DIR = os.path.join(ROOT_DIR, "output")
+print(ROOT_DIR)
 
 
 def get_scanner_from_num(num: int):
