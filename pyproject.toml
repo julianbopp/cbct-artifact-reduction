@@ -1,0 +1,7 @@
+[project]
+name = "cbct-artifact-reduction"
+version = "0.0.1"
+[tool.setuptools.packages.find]
+where = ["src"]
+[tool.ruff]
+src= ["."]
