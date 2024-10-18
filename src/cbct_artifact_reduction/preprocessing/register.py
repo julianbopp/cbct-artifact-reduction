@@ -1,8 +1,6 @@
 import os
-import skimage.transform as skTrans
-from utils import (
+from cbct_artifact_reduction.utils import (
     OUTPUT_DIR,
-    min_max_normalize,
 )
 import ants
 

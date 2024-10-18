@@ -1,7 +1,6 @@
-from utils import get_scanner_from_num, OUTPUT_DIR
+from cbct_artifact_reduction.utils import get_scanner_from_num, OUTPUT_DIR
 import os
 import nibabel as nib
-import matplotlib.pyplot as plt
 import numpy as np
 
 

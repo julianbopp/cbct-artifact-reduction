@@ -1,5 +1,5 @@
 import os
-from utils import OUTPUT_DIR
+from cbct_artifact_reduction.utils import OUTPUT_DIR
 import numpy as np
 
 array = np.zeros((1, 1400))

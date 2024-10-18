@@ -1,8 +1,6 @@
 import os
-from utils import OUTPUT_DIR, min_max_normalize, nifti_to_numpy, get_scanner_from_num
+from cbct_artifact_reduction.utils import OUTPUT_DIR, nifti_to_numpy, get_scanner_from_num
 import nibabel as nib
-import numpy as np
-import matplotlib.pyplot as plt
 import skimage.transform as skTrans
 
 processed_data = os.path.join(OUTPUT_DIR, "rotated")

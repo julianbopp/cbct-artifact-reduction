@@ -1,5 +1,5 @@
 from lakefs.client import Client
-from utils import OUTPUT_DIR
+from cbct_artifact_reduction.utils import OUTPUT_DIR
 import os
 
 # import utils

@@ -1,10 +1,8 @@
 import os
 import numpy as np
 import ants
-import skimage.transform as skTrans
 import matplotlib.pyplot as plt
-import nibabel as nib
-from utils import (
+from cbct_artifact_reduction.utils import (
     OUTPUT_DIR,
     nifti_to_numpy,
 )

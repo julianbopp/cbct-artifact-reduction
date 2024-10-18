@@ -1,7 +1,6 @@
 import ants
-from utils import (
+from cbct_artifact_reduction.utils import (
     OUTPUT_DIR,
-    nifti_to_numpy,
 )
 import os
 

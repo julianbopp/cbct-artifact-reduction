@@ -1,6 +1,5 @@
 import os
-from utils import ROOT_DIR, DATA_DIR, CODE_DIR, OUTPUT_DIR
-from brainglobe_utils.IO.image import load, save
+from cbct_artifact_reduction.utils import DATA_DIR
 
 import numpy as np
 

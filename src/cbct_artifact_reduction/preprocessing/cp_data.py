@@ -1,4 +1,4 @@
-from utils import get_scanner_from_num, OUTPUT_DIR
+from cbct_artifact_reduction.utils import get_scanner_from_num, OUTPUT_DIR
 import os
 import shutil
 

@@ -1,13 +1,11 @@
 # Description: This script will preprocess the projection data. There is data in tif and raw format from 3 different scanners. Output will be in nii.gz format.
 
-from brainglobe_utils.IO.image import load, save
+from brainglobe_utils.IO.image import save
 import numpy as np
 import os
-from utils import DATA_DIR, OUTPUT_DIR
-from utils import get_scanner_from_num, extract_tar_gz, tif_to_nifti
+from cbct_artifact_reduction.utils import DATA_DIR, OUTPUT_DIR
+from cbct_artifact_reduction.utils import get_scanner_from_num, extract_tar_gz, tif_to_nifti
 import nibabel as nib
-import matplotlib.pyplot as plt
-
 
 if __name__ == "__main__":
 
