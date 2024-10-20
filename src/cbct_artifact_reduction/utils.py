@@ -1,8 +1,10 @@
 import os
 import tarfile
+
 import nibabel as nib
-from brainglobe_utils.IO.image import load, save
 import numpy as np
+
+# from brainglobe_utils.IO.image import load, save
 
 # Save project root directory
 ROOT_DIR = os.path.abspath(
@@ -62,10 +64,13 @@ def extract_tar_gz(tar_gz_path: str, output_path: str):
 
 
 def tif_to_nifti(input_path: str, output_path: str):
+    assert os.path.exists(input_path), f"input path {input_path} does not exist"
+    assert os.path.exists(output_path), f"output path {output_path} does already exist"
+
     # Load the data
-    data = load.load_img_stack(input_path, 1, 1, 1)
+    data = nib.nifti1.Nifti1Image.from_filename(input_path)
     # Save the data
-    save.to_nii(data, output_path)
+    nib.nifti1.Nifti1Image.to_filename(data, output_path)
 
 
 def min_max_normalize(img):
