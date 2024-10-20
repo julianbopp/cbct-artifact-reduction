@@ -5,3 +5,7 @@ version = "0.0.1"
 where = ["src"]
 [tool.ruff]
 src= ["."]
+[tool.pytest.ini_options]
+pythonpath = 'src'
+testpaths = 'tests'
+
