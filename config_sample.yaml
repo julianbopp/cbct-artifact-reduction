@@ -1,0 +1,10 @@
+# Rename this file to config.yaml and fill in the necessary information
+lakefs:
+  host: 
+  username: 
+  password: 
+  ssl_ca_cert: 
+  data_repository: 
+  commit: 
+  cache_path:
+  verify_ssl: 
