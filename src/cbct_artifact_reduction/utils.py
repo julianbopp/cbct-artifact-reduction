@@ -1,8 +1,11 @@
+import mimetypes
 import os
 import tarfile
+from pathlib import Path
 
 import nibabel as nib
 import numpy as np
+from numpy.typing import NDArray
 
 # from brainglobe_utils.IO.image import load, save
 
@@ -13,7 +16,7 @@ ROOT_DIR = os.path.abspath(
 DATA_DIR = os.path.join(ROOT_DIR, "data")
 CODE_DIR = os.path.join(ROOT_DIR, "code")
 OUTPUT_DIR = os.path.join(ROOT_DIR, "output")
-print(ROOT_DIR)
+FRAME_DIR = os.path.join(ROOT_DIR, "output", "frames")
 
 
 def get_scanner_from_num(num: int):
@@ -82,8 +85,44 @@ def min_max_normalize(img):
     return normalized_img
 
 
-def nifti_to_numpy(nifti_path):
+def nifti_to_numpy(nifti_path: str) -> NDArray[np.float64]:
     assert os.path.exists(nifti_path), f"{nifti_path} does not exist"
     image = nib.Nifti1Image.from_filename(nifti_path)
     np_array = np.array(image.dataobj)
     return np_array
+
+
+def nifti_vol_to_frames(nifti_path: str, output_dir: str, overwrite=False):
+    """Extract frames from a 3d nifti volume and save them as individual 2d nifti files.
+    Input dimensions would be NxMxT, where T is the number of frames."""
+
+    assert os.path.exists(nifti_path), f"{nifti_path} does not exist"
+    assert os.path.exists(output_dir), f"{output_dir} does not exist"
+    image = nib.Nifti1Image.from_filename(nifti_path)
+    np_array = np.array(image.dataobj)
+
+    base_filename = filename_without_extension(os.path.basename(nifti_path))
+    for i in range(np_array.shape[2]):
+        if not overwrite and os.path.exists(
+            os.path.join(output_dir, f"{base_filename}_{i}.nii.gz")
+        ):
+            print(f"Skipping {base_filename}_{i}.nii.gz as it already exists")
+            continue
+        frame = np_array[:, :, i]
+        nib_frame = nib.Nifti1Image(frame, image.affine)
+        nib.save(nib_frame, os.path.join(output_dir, f"{base_filename}_{i}.nii.gz"))
+
+
+def guess_extensions(filename: str):
+    mimetypes.add_type("image/nifti", ".nii")
+    mimetypes.add_type("file/archive", ".gz")
+    return [s for s in Path(filename).suffixes if s in mimetypes.types_map]
+
+
+def filename_without_extension(filename: str):
+    extensions = guess_extensions(filename)
+
+    for i in extensions:
+        filename = filename.replace(i, "")
+
+    return filename
