@@ -169,7 +169,7 @@ class NiftiDataFolder(DataFolder):
             )
             if not overwrite_files and os.path.exists(resized_nifti_path):
                 print(
-                    f"Resized {self.get_filename(f_path)} already exists at destination. Skipping."
+                    f"Resized {get_filename(f_path)} already exists at destination. Skipping."
                 )
                 continue
 
