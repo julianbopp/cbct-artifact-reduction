@@ -63,7 +63,9 @@ def numpy_to_nifti(np_array, output_path: str):
 
 def tif_to_nifti(input_path: str, output_path: str):
     assert os.path.exists(input_path), f"input path {input_path} does not exist"
-    assert os.path.exists(output_path), f"output path {output_path} does already exist"
+    assert not os.path.exists(
+        output_path
+    ), f"output path {output_path} does already exist"
 
     # Load the data
     data = nib.nifti1.Nifti1Image.from_filename(input_path)
