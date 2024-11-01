@@ -49,12 +49,3 @@ def get_scanner_from_num(num: int):
         fov = "large"
 
     return orig_num, scanner, material, implants, fov
-
-
-def min_max_normalize(img):
-    # Function used to normalize image before visualization with vizdom
-
-    _min = img.min()
-    _max = img.max()
-    normalized_img = (img - _min) / (_max - _min)
-    return normalized_img

@@ -10,6 +10,15 @@ from skimage import transform as skTrans
 from cbct_artifact_reduction.utils import ROOT_DIR
 
 
+def min_max_normalize(img):
+    """Function used to normalize image to range [0, 1]."""
+
+    _min = img.min()
+    _max = img.max()
+    normalized_img = (img - _min) / (_max - _min)
+    return normalized_img
+
+
 def guess_extensions(filename: str):
     mimetypes.add_type("image/nifti", ".nii")
     mimetypes.add_type("file/archive", ".gz")
