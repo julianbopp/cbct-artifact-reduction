@@ -10,6 +10,11 @@ from skimage import transform as skTrans
 from cbct_artifact_reduction.utils import ROOT_DIR
 
 
+def create_binary_threshold_mask(np_array, threshold):
+    """Function used to threshold a numpy array."""
+    return np.where(np_array > threshold, 1, 0)
+
+
 def min_max_normalize(img):
     """Function used to normalize image to range [0, 1]."""
 
