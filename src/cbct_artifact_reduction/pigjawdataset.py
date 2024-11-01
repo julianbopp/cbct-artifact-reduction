@@ -7,10 +7,14 @@ class PigJawSlice:
 
     def __init__(self, file_path, id) -> None:
         self.file_path = file_path
-        self.orig_num, self.scanner, self.material, self.implants, self.fov = get_scanner_from_num(id)
+        self.orig_num, self.scanner, self.material, self.implants, self.fov = (
+            get_scanner_from_num(id)
+        )
+
 
 class PigJawDataset(Dataset):
-    ""
+    """"""
+
     def __init__(self, lakefs_loader, cache_files=True, test_flag=False):
 
         self.jaw_slices = {}
@@ -27,5 +31,8 @@ class PigJawDataset(Dataset):
         filenames = self.lakefs_loader.get_all_filenames()
         self.parse_files(filenames)
 
-    def parse_files(self, filenames):
+    def parse_files(self, filenames: list[str]):
+        """Parse the filenames to create a list of PigJawSlice objects"""
+        for filename in filenames:
+            pass
         # parse the filenames to create a dictionary
