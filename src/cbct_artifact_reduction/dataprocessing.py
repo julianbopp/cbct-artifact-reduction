@@ -1,0 +1,193 @@
+import mimetypes
+import os
+from pathlib import Path
+
+import nibabel as nib
+import numpy as np
+from numpy.typing import NDArray
+from skimage import transform as skTrans
+
+from cbct_artifact_reduction.utils import ROOT_DIR
+
+
+def guess_extensions(filename: str):
+    mimetypes.add_type("image/nifti", ".nii")
+    mimetypes.add_type("file/archive", ".gz")
+    return [s for s in Path(filename).suffixes if s in mimetypes.types_map]
+
+
+def filename_without_extension(filename: str):
+    extensions = guess_extensions(filename)
+
+    for i in extensions:
+        filename = filename.replace(i, "")
+
+    return filename
+
+
+def extract_tar_gz(tar_gz_path: str, output_path: str):
+    file = tarfile.open(tar_gz_path)
+    file.extractall(output_path)
+    file.close()
+
+
+def tif_to_nifti(input_path: str, output_path: str):
+    assert os.path.exists(input_path), f"input path {input_path} does not exist"
+    assert os.path.exists(output_path), f"output path {output_path} does already exist"
+
+    # Load the data
+    data = nib.nifti1.Nifti1Image.from_filename(input_path)
+    # Save the data
+    nib.nifti1.Nifti1Image.to_filename(data, output_path)
+
+
+def resize_single_file(
+    nifti_path: str,
+    new_dimensions: tuple[int, int],
+    output_file_path: str,
+    preserve_range: bool = False,
+):
+    """Resize a single nifti file to new dimensions."""
+    np_array = single_nifti_to_numpy(nifti_path)
+    resized_array = skTrans.resize(
+        np_array, new_dimensions, preserve_range=preserve_range
+    )
+    resized_nifti = nib.Nifti1Image(resized_array, affine=None)
+    nib.save(
+        resized_nifti,
+        output_file_path,
+    )
+
+
+def single_nifti_to_numpy(nifti_path: str):
+    """Convert a single nifti file to a numpy array."""
+    assert os.path.exists(nifti_path), f"{nifti_path} does not exist"
+    nib_object = nib.Nifti1Image.from_filename(nifti_path)
+    data = nib_object.get_fdata()
+    np_array = np.array(data)
+    return np_array
+
+
+def nifti_vol_to_frames(nifti_path: str, output_dir: str, overwrite: bool = False):
+    """Extract frames from a 3d nifti volume and save them as individual 2d nifti files.
+    Input dimensions would be NxMxT, where T is the number of frames."""
+
+    assert os.path.exists(nifti_path), f"{nifti_path} does not exist"
+    assert os.path.exists(output_dir), f"{output_dir} does not exist"
+    image = nib.Nifti1Image.from_filename(nifti_path)
+    np_array = np.array(image.dataobj)
+
+    base_filename = filename_without_extension(os.path.basename(nifti_path))
+    for i in range(np_array.shape[2]):
+        if not overwrite and os.path.exists(
+            os.path.join(output_dir, f"{base_filename}_{i}.nii.gz")
+        ):
+            print(f"Skipping {base_filename}_{i}.nii.gz as it already exists")
+            continue
+        frame = np_array[:, :, i]
+        nib_frame = nib.Nifti1Image(frame, image.affine)
+        nib.save(nib_frame, os.path.join(output_dir, f"{base_filename}_{i}.nii.gz"))
+
+
+class DataFolder:
+    """Class that represents a folder containing data for the CBCT artifact reduction project.
+    This class defines a number of methods that can be used to interact with the data in the folder.
+    """
+
+    def __init__(self, folder_path: str, data_extension: str) -> None:
+        self.folder_path: str = folder_path
+        self.data_extension: str = data_extension
+        self.data_path_list: list[str] = [
+            os.path.join(folder_path, f)
+            for f in os.listdir(folder_path)
+            if f.endswith(data_extension)
+        ]
+
+    def list_filenames(self) -> list[str]:
+        """List all files in the data folder."""
+        data_list = [
+            f
+            for f in os.listdir(self.folder_path)
+            if f.endswith(f"{self.data_extension}")
+        ]
+
+        return data_list
+
+    def print_filenames(self):
+        """Print all filenames in the data folder."""
+        for file in self.list_filenames():
+            print(file)
+        pass
+
+    def print_filepaths(self):
+        """Print all filepaths in the data folder."""
+        for file in self.data_path_list:
+            print(file)
+        pass
+
+    def get_filename(self, filepath: str) -> str:
+        """Get the filename from a full filepath."""
+        return os.path.basename(filepath)
+
+
+class NiftiDataFolder(DataFolder):
+    """Class that represents a folder containing nifti volumes or slices data for the CBCT artifact reduction project."""
+
+    def __init__(self, folder_path: str) -> None:
+        super().__init__(folder_path, ".nii.gz")
+
+    def resize_all_files(
+        self,
+        output_folder_path: str,
+        new_dimensions: tuple[int, int],
+        overwrite_files: bool = False,
+        preserve_range: bool = False,
+    ):
+        """Resize all nifti files in the data folder to new dimensions. Takes in the output folder path, whether to overwrite files, the new dimensions and whether to preserve the range."""
+
+        for f_path in self.data_path_list:
+            resized_nifti_path = os.path.join(
+                output_folder_path, os.path.basename(f_path)
+            )
+            if not overwrite_files and os.path.exists(resized_nifti_path):
+                print(
+                    f"Resized {self.get_filename(f_path)} already exists at destination. Skipping."
+                )
+                continue
+
+            # Resized file doesn't exist or overwrite is True
+            resize_single_file(
+                f_path,
+                new_dimensions,
+                resized_nifti_path,
+                preserve_range=preserve_range,
+            )
+
+    def nifti_vol_to_frames(
+        self, nifti_path: str, output_dir: str, overwrite: bool = False
+    ):
+        """Extract frames from a 3d nifti volume and save them as individual 2d nifti files.
+        Input dimensions would be NxMxT, where T is the number of frames."""
+
+        assert os.path.exists(nifti_path), f"{nifti_path} does not exist"
+        assert os.path.exists(output_dir), f"{output_dir} does not exist"
+        image = nib.Nifti1Image.from_filename(nifti_path)
+        np_array = np.array(image.dataobj)
+
+        base_filename = filename_without_extension(os.path.basename(nifti_path))
+        for i in range(np_array.shape[2]):
+            if not overwrite and os.path.exists(
+                os.path.join(output_dir, f"{base_filename}_{i}.nii.gz")
+            ):
+                print(f"Skipping {base_filename}_{i}.nii.gz as it already exists")
+                continue
+            frame = np_array[:, :, i]
+            nib_frame = nib.Nifti1Image(frame, image.affine)
+            nib.save(nib_frame, os.path.join(output_dir, f"{base_filename}_{i}.nii.gz"))
+
+
+if __name__ == "__main__":
+
+    data_folder = NiftiDataFolder(os.path.join(ROOT_DIR, "sample_data"))
+    data_folder.print_filenames()
+    data_folder.print_filepaths()
