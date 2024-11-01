@@ -50,6 +50,17 @@ def extract_tar_gz(tar_gz_path: str, output_path: str):
     file.close()
 
 
+def numpy_to_nifti(np_array, output_path: str):
+    assert not os.path.exists(
+        output_path
+    ), f"output path {output_path} does already exist"
+
+    # Load the data
+    data = nib.Nifti1Image(np_array, np.eye(4), dtype=np_array.dtype)
+    # Save the data
+    nib.Nifti1Image.to_filename(data, output_path)
+
+
 def tif_to_nifti(input_path: str, output_path: str):
     assert os.path.exists(input_path), f"input path {input_path} does not exist"
     assert os.path.exists(output_path), f"output path {output_path} does already exist"
