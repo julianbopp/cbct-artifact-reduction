@@ -169,27 +169,16 @@ class NiftiDataFolder(DataFolder):
                 f"Resized file {count+1}/{len(self.data_path_list)}. Saved at {resized_nifti_path}"
             )
 
-    def nifti_vol_to_frames(
-        self, nifti_path: str, output_dir: str, overwrite: bool = False
-    ):
-        """Extract frames from a 3d nifti volume and save them as individual 2d nifti files.
-        Input dimensions would be NxMxT, where T is the number of frames."""
+    def split_all_volumes_into_frames(self, output_folder_path: str):
+        """Split all nifti volumes in the data folder into frames and save them as individual 2d nifti files."""
+        if not os.path.exists(output_folder_path):
+            os.makedirs(output_folder_path)
 
-        assert os.path.exists(nifti_path), f"{nifti_path} does not exist"
-        assert os.path.exists(output_dir), f"{output_dir} does not exist"
-        image = nib.Nifti1Image.from_filename(nifti_path)
-        np_array = np.array(image.dataobj)
-
-        base_filename = filename_without_extension(os.path.basename(nifti_path))
-        for i in range(np_array.shape[2]):
-            if not overwrite and os.path.exists(
-                os.path.join(output_dir, f"{base_filename}_{i}.nii.gz")
-            ):
-                print(f"Skipping {base_filename}_{i}.nii.gz as it already exists")
-                continue
-            frame = np_array[:, :, i]
-            nib_frame = nib.Nifti1Image(frame, image.affine)
-            nib.save(nib_frame, os.path.join(output_dir, f"{base_filename}_{i}.nii.gz"))
+        for count, f_path in enumerate(self.data_path_list):
+            nifti_vol_to_frames(f_path, output_folder_path)
+            print(
+                f"Split volume {count+1}/{len(self.data_path_list)}. Saved at {output_folder_path}"
+            )
 
 
 if __name__ == "__main__":
