@@ -10,6 +10,11 @@ from skimage import transform as skTrans
 from cbct_artifact_reduction.utils import ROOT_DIR
 
 
+def get_filename(filepath: str) -> str:
+    """Get the filename from a full filepath."""
+    return os.path.basename(filepath)
+
+
 def create_binary_threshold_mask(np_array, threshold):
     """Function used to threshold a numpy array."""
     return np.where(np_array > threshold, 1, 0)
@@ -138,10 +143,6 @@ class DataFolder:
         for file in self.data_path_list:
             print(file)
         pass
-
-    def get_filename(self, filepath: str) -> str:
-        """Get the filename from a full filepath."""
-        return os.path.basename(filepath)
 
 
 class NiftiDataFolder(DataFolder):
