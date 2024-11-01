@@ -145,7 +145,10 @@ class NiftiDataFolder(DataFolder):
     ):
         """Resize all nifti files in the data folder to new dimensions. Takes in the output folder path, whether to overwrite files, the new dimensions and whether to preserve the range."""
 
-        for f_path in self.data_path_list:
+        if not os.path.exists(output_folder_path):
+            os.makedirs(output_folder_path)
+
+        for count, f_path in enumerate(self.data_path_list):
             resized_nifti_path = os.path.join(
                 output_folder_path, os.path.basename(f_path)
             )
@@ -161,6 +164,9 @@ class NiftiDataFolder(DataFolder):
                 new_dimensions,
                 resized_nifti_path,
                 preserve_range=preserve_range,
+            )
+            print(
+                f"Resized file {count+1}/{len(self.data_path_list)}. Saved at {resized_nifti_path}"
             )
 
     def nifti_vol_to_frames(
