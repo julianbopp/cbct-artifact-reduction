@@ -1,13 +1,4 @@
-import mimetypes
 import os
-import tarfile
-from pathlib import Path
-
-import nibabel as nib
-import numpy as np
-from numpy.typing import NDArray
-
-# from brainglobe_utils.IO.image import load, save
 
 # Save project root directory
 ROOT_DIR = os.path.abspath(
