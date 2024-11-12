@@ -7,3 +7,11 @@ def test_lakefs_connection():
     testLakeFSClient.set_branch(f"{cfg.LAKEFS_COMMIT}")
     files = testLakeFSClient.list_all_files()
     print(files)
+
+
+def test_lakefs_download():
+    pass
+
+
+def test_lakefs_caching():
+    pass
