@@ -16,5 +16,6 @@ LAKEFS_DATA_REPOSITORY: str = config["lakefs"]["data_repository"]
 LAKEFS_COMMIT: str = config["lakefs"]["commit"]
 LAKEFS_CACHE_PATH: str = config["lakefs"]["cache_path"]
 LAKEFS_VERIFY_SSL: bool = config["lakefs"]["verify_ssl"]
+CACHE_PATH: str = config["lakefs"]["cache_path"]
 
 f.close()
