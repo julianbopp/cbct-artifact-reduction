@@ -1,38 +1,69 @@
+import os
+
+import numpy as np
 from torch.utils.data.dataset import Dataset
-from utils import get_scanner_from_num
+
+import cbct_artifact_reduction.dataprocessing as dp
+from cbct_artifact_reduction.lakefs_other import boto3client
 
 
-class PigJawSlice:
-    """Class that represents a pig jaw slice. Stores the relevant information about the projection stack that the slice comes from."""
+class InpaintingSliceDataset(Dataset):
+    """A dataset containing slices of CBCT scans and binary masks to train a model for inpainting.
 
-    def __init__(self, file_path, id) -> None:
-        self.file_path = file_path
-        self.orig_num, self.scanner, self.material, self.implants, self.fov = (
-            get_scanner_from_num(id)
-        )
+    Attributes:
+        lakefs_loader (boto3client): The LakeFSLoader object used to load data from LakeFS.
+        slice_directory_path (str): The path to the directory containing the CBCT slices.
+        mask_directory_path (str): The path to the directory containing the binary masks.
+    """
 
+    def __init__(
+        self,
+        lakefs_loader: boto3client,
+        slice_directory_path: str,
+        mask_directory_path: str,
+    ) -> None:
+        """Initializes the dataset.
 
-class PigJawDataset(Dataset):
-    """"""
+        Args:
+            lakefs_loader (boto3client): The LakeFSLoader object used to load data from LakeFS.
+            slice_directory_path (str): The path to the directory containing the CBCT slices.
+            mask_directory_path (str): The path to the directory containing the binary masks.
+        """
+        super().__init__()
+        self.data_extension = ".nii.gz"
+        self.slice_directory_path = slice_directory_path
+        self.mask_directory_path = mask_directory_path
+        self.slice_filenames = [
+            f
+            for f in os.listdir(slice_directory_path)
+            if f.endswith(f"{self.data_extension}")
+        ]
+        self.mask_filenames = [
+            f
+            for f in os.listdir(mask_directory_path)
+            if f.endswith(f"{self.data_extension}")
+        ]
 
-    def __init__(self, lakefs_loader, cache_files=True, test_flag=False):
+        assert len(self.slice_filenames) == len(
+            self.mask_filenames
+        ), "Number of slices and masks must be equal."
 
-        self.jaw_slices = {}
-        self.lakefs_loader = lakefs_loader
-        self.cache_files = cache_files
+    def __len__(self) -> int:
+        return len(self.slice_filenames)
 
-        self.test_flag = test_flag
-        if self.test_flag:
-            self.seqtypes = ["voided", "mask"]
-        else:
-            self.seqtypes = ["voided", "mask", "healthy"]
+    def __getitem__(self, idx: int) -> tuple[np.ndarray, np.ndarray]:
+        """Returns a tuple containing the slice and mask at the given index.
 
-        # parse all object file names to create a data set
-        filenames = self.lakefs_loader.get_all_filenames()
-        self.parse_files(filenames)
+        Args:
+            idx (int): The index of the slice and mask to return.
 
-    def parse_files(self, filenames: list[str]):
-        """Parse the filenames to create a list of PigJawSlice objects"""
-        for filename in filenames:
-            pass
-        # parse the filenames to create a dictionary
+        Returns:
+            tuple[np.ndarray, np.ndarray]: A tuple containing the slice and mask at the given index.
+        """
+        slice_path = os.path.join(self.slice_directory_path, self.slice_filenames[idx])
+        mask_path = os.path.join(self.mask_directory_path, self.mask_filenames[idx])
+
+        slice_np_array = dp.single_nifti_to_numpy(slice_path)
+        mask_np_array = dp.single_nifti_to_numpy(mask_path)
+
+        return slice_np_array, mask_np_array
