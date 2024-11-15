@@ -1,8 +1,10 @@
 import os
 
+import numpy as np
 from torch.utils.data.dataset import Dataset
 
-from cbct_artifact_reduction.lakefs_other import boto3client
+from cbct_artifact_reduction.dataprocessing import single_nifti_to_numpy
+from cbct_artifact_reduction.lakefs_own import CustomBoto3Client
 
 
 class SingleDataPoint:
@@ -20,8 +22,8 @@ class SingleDataPoint:
             relative_slice_path (str): The path to the slice
             relative_mask_path (str): The path to the mask.
         """
-        self.slice_path = relative_slice_path
-        self.mask_path = relative_mask_path
+        self.relative_slice_path = relative_slice_path
+        self.relative_mask_path = relative_mask_path
 
 
 class InpaintingSliceDataset(Dataset):
@@ -31,7 +33,7 @@ class InpaintingSliceDataset(Dataset):
 
     def __init__(
         self,
-        lakefs_loader: boto3client,
+        lakefs_loader: CustomBoto3Client,
         data_specification_path: str,
         slice_directory_path: str,
         mask_directory_path: str,
@@ -76,8 +78,10 @@ class InpaintingSliceDataset(Dataset):
 
         return dataset
 
-    def __getitem__(self, idx: int) -> SingleDataPoint:
-        """Returns a tuple containing the slice and mask at the given index.
+    def __getitem__(self, idx: int) -> tuple[np.ndarray, np.ndarray]:
+        """Downloads the idx-th slice and mask from LakeFS and returns them as numpy arrays.
+
+        Uses cache if the files are already downloaded.
 
         Args:
             idx (int): The index of the slice and mask to return.
@@ -88,7 +92,17 @@ class InpaintingSliceDataset(Dataset):
 
         assert 0 <= idx < self.__len__(), f"Index {idx} out of bounds"
 
-        slice_info = self.dataset[idx]
+        item_info = self.dataset[idx]
+
+        self.lakefs_loader.get_file(item_info.relative_slice_path)
+        self.lakefs_loader.get_file(item_info.relative_mask_path)
+
+        base_path = self.lakefs_loader.cache_path
+        slice_path = os.path.join(base_path, item_info.relative_slice_path)
+        mask_path = os.path.join(base_path, item_info.relative_mask_path)
+
+        slice_np_array = single_nifti_to_numpy(slice_path)
+        mask_np_array = single_nifti_to_numpy(mask_path)
 
         return slice_np_array, mask_np_array
 
