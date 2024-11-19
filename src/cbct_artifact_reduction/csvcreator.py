@@ -1,46 +1,4 @@
 import csv
-import random
-
-from cbct_artifact_reduction.utils import get_scanner_from_num
-
-
-def generate_random_integers(N, A, B):
-    """Generates N random integers between A and B (inclusive).
-
-    Args:
-        N (int): Number of random integers.
-        A (int): Lower bound.
-        B (int): Upper bound.
-
-    Returns:
-        list: List of N random integers between A and B.
-    """
-    return [random.randint(A, B) for _ in range(N)]
-
-
-def getAllControlIDs(exludeIDs: list[int] | None = [41, 208]) -> list[str]:
-    """Find all scan ID's that correspond to control images without implants in the CBCT pig jaw data.
-
-    The CBCT pig jaw dataset consists of 398 scans. The scans with the ID's 41 and 208 are missing.
-
-    Args:
-        exludeIDs (list[int], optional): List of scan ID's to exclude. Defaults to missing ID's of CBCT pig jaw data.
-    Returns:
-        list[str]: List of scan ID's that correspond to control images without implants.
-    """
-
-    if exludeIDs is None:
-        possibleIDs = [f"{f}" for f in range(0, 401)]
-    else:
-        possibleIDs = [f"{f}" for f in range(0, 401) if f not in exludeIDs]
-
-    controlIDs: list[str] = []
-    for id in possibleIDs:
-        scanner = get_scanner_from_num(int(id))
-        if scanner[3] == 0:
-            controlIDs.append(id)
-
-    return controlIDs
 
 
 def createSliceMaskCSV(slices: list[str], masks: list[str], csv_output_path: str):
