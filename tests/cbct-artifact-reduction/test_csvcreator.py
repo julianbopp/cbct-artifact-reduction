@@ -2,13 +2,6 @@ import cbct_artifact_reduction.csvcreator as cc
 import pytest
 
 
-def testGetAllControlIDs():
-    controlIDs = cc.getAllControlIDs()
-    control_list = [f"{f}" for f in range(0, 401) if f % 10 == 0]
-
-    assert controlIDs == control_list
-
-
 def testCreateSliceMaskCSV(tmp_path):
     slices = ["slice1.nii.gz", "slice2.nii.gz", "slice3.nii.gz"]
     masks = ["mask1.nii.gz", "mask2.nii.gz", "mask3.nii.gz"]

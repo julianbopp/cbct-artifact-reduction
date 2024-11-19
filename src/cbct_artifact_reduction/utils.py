@@ -89,3 +89,103 @@ def getAllControlIDs(exludeIDs: list[int] | None = [41, 208]) -> list[str]:
             controlIDs.append(id)
 
     return controlIDs
+
+
+def getAllAxeosIDs(exludeIDs: list[int] | None = [41, 208]) -> list[str]:
+    """Find all scan ID's that correspond to Axeos images in the CBCT pig jaw data.
+
+    The CBCT pig jaw dataset consists of 398 scans. The scans with the ID's 41 and 208 are missing.
+
+    Args:
+        exludeIDs (list[int], optional): List of scan ID's to exclude. Defaults to missing ID's of CBCT pig jaw data.
+    Returns:
+        list[str]: List of scan ID's that correspond to Axeos images.
+    """
+
+    if exludeIDs is None:
+        possibleIDs = [f"{f}" for f in range(0, 401)]
+    else:
+        possibleIDs = [f"{f}" for f in range(0, 401) if f not in exludeIDs]
+
+    axeosIDs: list[str] = []
+    for id in possibleIDs:
+        scanner = get_scanner_from_num(int(id))
+        if scanner[1] == "axeos":
+            axeosIDs.append(id)
+
+    return axeosIDs
+
+
+def getAllAccuitomoIDs(exludeIDs: list[int] | None = [41, 208]) -> list[str]:
+    """Find all scan ID's that correspond to Accuitomo images in the CBCT pig jaw data.
+
+    The CBCT pig jaw dataset consists of 398 scans. The scans with the ID's 41 and 208 are missing.
+
+    Args:
+        exludeIDs (list[int], optional): List of scan ID's to exclude. Defaults to missing ID's of CBCT pig jaw data.
+    Returns:
+        list[str]: List of scan ID's that correspond to Accuitomo images.
+    """
+
+    if exludeIDs is None:
+        possibleIDs = [f"{f}" for f in range(0, 401)]
+    else:
+        possibleIDs = [f"{f}" for f in range(0, 401) if f not in exludeIDs]
+
+    accuitomoIDs: list[str] = []
+    for id in possibleIDs:
+        scanner = get_scanner_from_num(int(id))
+        if scanner[1] == "accuitomo":
+            accuitomoIDs.append(id)
+
+    return accuitomoIDs
+
+
+def getAllplanmecaIDs(exludeIDs: list[int] | None = [41, 208]) -> list[str]:
+    """Find all scan ID's that correspond to Planmeca images in the CBCT pig jaw data.
+
+    The CBCT pig jaw dataset consists of 398 scans. The scans with the ID's 41 and 208 are missing.
+
+    Args:
+        exludeIDs (list[int], optional): List of scan ID's to exclude. Defaults to missing ID's of CBCT pig jaw data.
+    Returns:
+        list[str]: List of scan ID's that correspond to Planmeca images.
+    """
+
+    if exludeIDs is None:
+        possibleIDs = [f"{f}" for f in range(0, 401)]
+    else:
+        possibleIDs = [f"{f}" for f in range(0, 401) if f not in exludeIDs]
+
+    planmecaIDs: list[str] = []
+    for id in possibleIDs:
+        scanner = get_scanner_from_num(int(id))
+        if scanner[1] == "planmeca":
+            planmecaIDs.append(id)
+
+    return planmecaIDs
+
+
+def getAllx800IDs(exludeIDs: list[int] | None = [41, 208]) -> list[str]:
+    """Find all scan ID's that correspond to x800 images in the CBCT pig jaw data.
+
+    The CBCT pig jaw dataset consists of 398 scans. The scans with the ID's 41 and 208 are missing.
+
+    Args:
+        exludeIDs (list[int], optional): List of scan ID's to exclude. Defaults to missing ID's of CBCT pig jaw data.
+    Returns:
+        list[str]: List of scan ID's that correspond to x800 images.
+    """
+
+    if exludeIDs is None:
+        possibleIDs = [f"{f}" for f in range(0, 401)]
+    else:
+        possibleIDs = [f"{f}" for f in range(0, 401) if f not in exludeIDs]
+
+    x800IDs: list[str] = []
+    for id in possibleIDs:
+        scanner = get_scanner_from_num(int(id))
+        if scanner[1] == "x800":
+            x800IDs.append(id)
+
+    return x800IDs
