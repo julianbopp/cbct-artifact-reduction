@@ -1,6 +1,21 @@
 import csv
+import random
 
 from cbct_artifact_reduction.utils import get_scanner_from_num
+
+
+def generate_random_integers(N, A, B):
+    """Generates N random integers between A and B (inclusive).
+
+    Args:
+        N (int): Number of random integers.
+        A (int): Lower bound.
+        B (int): Upper bound.
+
+    Returns:
+        list: List of N random integers between A and B.
+    """
+    return [random.randint(A, B) for _ in range(N)]
 
 
 def getAllControlIDs(exludeIDs: list[int] | None = [41, 208]) -> list[str]:
