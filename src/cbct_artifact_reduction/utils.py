@@ -78,9 +78,9 @@ def getAllControlIDs(exludeIDs: list[int] | None = [41, 208]) -> list[str]:
     """
 
     if exludeIDs is None:
-        possibleIDs = [f"{f}" for f in range(0, 401)]
+        possibleIDs = [f"{f}" for f in range(1, 401)]
     else:
-        possibleIDs = [f"{f}" for f in range(0, 401) if f not in exludeIDs]
+        possibleIDs = [f"{f}" for f in range(1, 401) if f not in exludeIDs]
 
     controlIDs: list[str] = []
     for id in possibleIDs:
@@ -103,9 +103,9 @@ def getAllAxeosIDs(exludeIDs: list[int] | None = [41, 208]) -> list[str]:
     """
 
     if exludeIDs is None:
-        possibleIDs = [f"{f}" for f in range(0, 401)]
+        possibleIDs = [f"{f}" for f in range(1, 401)]
     else:
-        possibleIDs = [f"{f}" for f in range(0, 401) if f not in exludeIDs]
+        possibleIDs = [f"{f}" for f in range(1, 401) if f not in exludeIDs]
 
     axeosIDs: list[str] = []
     for id in possibleIDs:
@@ -128,9 +128,9 @@ def getAllAccuitomoIDs(exludeIDs: list[int] | None = [41, 208]) -> list[str]:
     """
 
     if exludeIDs is None:
-        possibleIDs = [f"{f}" for f in range(0, 401)]
+        possibleIDs = [f"{f}" for f in range(1, 401)]
     else:
-        possibleIDs = [f"{f}" for f in range(0, 401) if f not in exludeIDs]
+        possibleIDs = [f"{f}" for f in range(1, 401) if f not in exludeIDs]
 
     accuitomoIDs: list[str] = []
     for id in possibleIDs:
@@ -153,9 +153,9 @@ def getAllplanmecaIDs(exludeIDs: list[int] | None = [41, 208]) -> list[str]:
     """
 
     if exludeIDs is None:
-        possibleIDs = [f"{f}" for f in range(0, 401)]
+        possibleIDs = [f"{f}" for f in range(1, 401)]
     else:
-        possibleIDs = [f"{f}" for f in range(0, 401) if f not in exludeIDs]
+        possibleIDs = [f"{f}" for f in range(1, 401) if f not in exludeIDs]
 
     planmecaIDs: list[str] = []
     for id in possibleIDs:
@@ -178,9 +178,9 @@ def getAllx800IDs(exludeIDs: list[int] | None = [41, 208]) -> list[str]:
     """
 
     if exludeIDs is None:
-        possibleIDs = [f"{f}" for f in range(0, 401)]
+        possibleIDs = [f"{f}" for f in range(1, 401)]
     else:
-        possibleIDs = [f"{f}" for f in range(0, 401) if f not in exludeIDs]
+        possibleIDs = [f"{f}" for f in range(1, 401) if f not in exludeIDs]
 
     x800IDs: list[str] = []
     for id in possibleIDs:
