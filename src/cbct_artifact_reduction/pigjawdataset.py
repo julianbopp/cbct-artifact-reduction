@@ -90,16 +90,14 @@ class InpaintingSliceDataset(Dataset):
             tuple[np.ndarray, np.ndarray]: A tuple containing the slice and mask at the given index.
         """
 
+        # TODO: Handle 0 index for csv header
+
         assert 0 <= idx < self.__len__(), f"Index {idx} out of bounds"
 
         item_info = self.dataset[idx]
 
-        self.lakefs_loader.get_file(item_info.relative_slice_path)
-        self.lakefs_loader.get_file(item_info.relative_mask_path)
-
-        base_path = self.lakefs_loader.cache_path
-        slice_path = os.path.join(base_path, item_info.relative_slice_path)
-        mask_path = os.path.join(base_path, item_info.relative_mask_path)
+        slice_path = self.lakefs_loader.get_file(item_info.relative_slice_path)
+        mask_path = self.lakefs_loader.get_file(item_info.relative_mask_path)
 
         slice_np_array = single_nifti_to_numpy(slice_path)
         mask_np_array = single_nifti_to_numpy(mask_path)
