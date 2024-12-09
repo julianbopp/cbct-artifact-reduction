@@ -173,3 +173,6 @@ out/
 
 # Ignore config.yaml
 config.yaml
+
+# Ignore .conda_config
+.conda_config
