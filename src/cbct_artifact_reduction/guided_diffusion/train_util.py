@@ -156,7 +156,14 @@ class TrainLoop:
             or self.step + self.resume_step < self.lr_anneal_steps
         ):
             batch, cond = next(self.data)
-            self.run_step(batch, cond)
+            batch = batch.float()
+            cond = cond.float()
+
+            mask = cond
+            ground_truth = batch
+            masked_image = batch * (1 - mask)
+
+            self.run_step(ground_truth, masked_image, mask)
             if self.step % self.log_interval == 0:
                 logger.dumpkvs()
             if self.step % self.save_interval == 0:
@@ -169,15 +176,20 @@ class TrainLoop:
         if (self.step - 1) % self.save_interval != 0:
             self.save()
 
-    def run_step(self, batch, cond):
-        self.forward_backward(batch, cond)
+    def run_step(self, ground_truth, masked_image, mask):
+        self.forward_backward(ground_truth, masked_image, mask)
         took_step = self.mp_trainer.optimize(self.opt)
         if took_step:
             self._update_ema()
         self._anneal_lr()
         self.log_step()
 
-    def forward_backward(self, batch, cond):
+    def forward_backward(self, ground_truth, masked_image, mask):
+        # Concatenate the inputs to the model into a signel batch.
+        # Batch has shape [batch_size, 3, height, width]
+        batch = th.cat([ground_truth, masked_image, mask], dim=1)
+        cond = {}
+
         self.mp_trainer.zero_grad()
         for i in range(0, batch.shape[0], self.microbatch):
             micro = batch[i : i + self.microbatch].to(dist_util.dev())
@@ -188,6 +200,8 @@ class TrainLoop:
             last_batch = (i + self.microbatch) >= batch.shape[0]
             t, weights = self.schedule_sampler.sample(micro.shape[0], dist_util.dev())
 
+            # The first argument of partial is the function
+            # the other arguments of partial will be the input of the function
             compute_losses = functools.partial(
                 self.diffusion.training_losses,
                 self.ddp_model,
