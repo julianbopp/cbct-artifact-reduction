@@ -757,8 +757,13 @@ class GaussianDiffusion:
         if model_kwargs is None:
             model_kwargs = {}
         if noise is None:
-            noise = th.randn_like(x_start)
-        x_t = self.q_sample(x_start, t, noise=noise)
+            noise = th.randn_like(x_start[:, 0:1, ...])
+
+        goal = x_start[:, 0:1, ...]
+        res_t = self.q_sample(goal, t, noise=noise)
+
+        x_t = x_start
+        x_t[:, 0:1, ...] = res_t
 
         terms = {}
 
@@ -775,7 +780,6 @@ class GaussianDiffusion:
                 terms["loss"] *= self.num_timesteps
         elif self.loss_type == LossType.MSE or self.loss_type == LossType.RESCALED_MSE:
             model_output = model(x_t, self._scale_timesteps(t), **model_kwargs)
-
             if self.model_var_type in [
                 ModelVarType.LEARNED,
                 ModelVarType.LEARNED_RANGE,
@@ -788,8 +792,8 @@ class GaussianDiffusion:
                 frozen_out = th.cat([model_output.detach(), model_var_values], dim=1)
                 terms["vb"] = self._vb_terms_bpd(
                     model=lambda *args, r=frozen_out: r,
-                    x_start=x_start,
-                    x_t=x_t,
+                    x_start=goal,
+                    x_t=res_t,
                     t=t,
                     clip_denoised=False,
                 )["output"]
@@ -800,12 +804,14 @@ class GaussianDiffusion:
 
             target = {
                 ModelMeanType.PREVIOUS_X: self.q_posterior_mean_variance(
-                    x_start=x_start, x_t=x_t, t=t
+                    x_start=goal, x_t=res_t, t=t
                 )[0],
-                ModelMeanType.START_X: x_start,
+                ModelMeanType.START_X: goal,
                 ModelMeanType.EPSILON: noise,
             }[self.model_mean_type]
-            assert model_output.shape == target.shape == x_start.shape
+
+            model_output = model_output[:, 0:1, ...]
+            assert model_output.shape == target.shape  # == x_start.shape
             terms["mse"] = mean_flat((target - model_output) ** 2)
             if "vb" in terms:
                 terms["loss"] = terms["mse"] + terms["vb"]
