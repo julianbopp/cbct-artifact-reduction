@@ -102,7 +102,7 @@ class InpaintingSliceDataset(Dataset):
         slice_np_array = single_nifti_to_numpy(slice_path)
         mask_np_array = single_nifti_to_numpy(mask_path)
 
-        return slice_np_array, mask_np_array
+        return slice_np_array[np.newaxis, ...], mask_np_array[np.newaxis, ...]
 
     def __len__(self) -> int:
         return len(self.dataset)
