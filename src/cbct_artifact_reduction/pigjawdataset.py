@@ -64,6 +64,7 @@ class InpaintingSliceDataset(Dataset):
         """
         dataset = []
         with open(self.data_specification_path, "r") as f:
+            next(f, None)  # Skip the header row
             for line in f:
                 slice_filename, mask_filename = line.strip().split(",")
 
@@ -89,8 +90,6 @@ class InpaintingSliceDataset(Dataset):
         Returns:
             tuple[np.ndarray, np.ndarray]: A tuple containing the slice and mask at the given index.
         """
-
-        # TODO: Handle 0 index for csv header
 
         assert 0 <= idx < self.__len__(), f"Index {idx} out of bounds"
 
