@@ -1,10 +1,10 @@
 import mimetypes
 import os
+import tarfile
 from pathlib import Path
 
 import nibabel as nib
 import numpy as np
-from numpy.typing import NDArray
 from skimage import transform as skTrans
 
 from cbct_artifact_reduction.utils import ROOT_DIR
@@ -56,9 +56,9 @@ def numpy_to_nifti(np_array, output_path: str):
     ), f"output path {output_path} does already exist"
 
     # Load the data
-    data = nib.Nifti1Image(np_array, np.eye(4), dtype=np_array.dtype)
+    data = nib.nifti1.Nifti1Image(np_array, np.eye(4), dtype=np_array.dtype)
     # Save the data
-    nib.Nifti1Image.to_filename(data, output_path)
+    nib.nifti1.Nifti1Image.to_filename(data, output_path)
 
 
 def tif_to_nifti(input_path: str, output_path: str):
@@ -84,8 +84,8 @@ def resize_single_file(
     resized_array = skTrans.resize(
         np_array, new_dimensions, preserve_range=preserve_range
     )
-    resized_nifti = nib.Nifti1Image(resized_array, affine=None)
-    nib.save(
+    resized_nifti = nib.nifti1.Nifti1Image(resized_array, affine=None)
+    nib.nifti1.save(
         resized_nifti,
         output_file_path,
     )
@@ -94,7 +94,7 @@ def resize_single_file(
 def single_nifti_to_numpy(nifti_path: str):
     """Convert a single nifti file to a numpy array."""
     assert os.path.exists(nifti_path), f"{nifti_path} does not exist"
-    nib_object = nib.Nifti1Image.from_filename(nifti_path)
+    nib_object = nib.nifti1.Nifti1Image.from_filename(nifti_path)
     data = nib_object.get_fdata()
     np_array = np.array(data)
     return np_array
@@ -106,7 +106,7 @@ def nifti_vol_to_frames(nifti_path: str, output_dir: str, overwrite: bool = Fals
 
     assert os.path.exists(nifti_path), f"{nifti_path} does not exist"
     assert os.path.exists(output_dir), f"{output_dir} does not exist"
-    image = nib.Nifti1Image.from_filename(nifti_path)
+    image = nib.nifti1.Nifti1Image.from_filename(nifti_path)
     np_array = np.array(image.dataobj)
 
     base_filename = filename_without_extension(os.path.basename(nifti_path))
@@ -117,8 +117,10 @@ def nifti_vol_to_frames(nifti_path: str, output_dir: str, overwrite: bool = Fals
             print(f"Skipping {base_filename}_{i}.nii.gz as it already exists")
             continue
         frame = np_array[:, :, i]
-        nib_frame = nib.Nifti1Image(frame, image.affine)
-        nib.save(nib_frame, os.path.join(output_dir, f"{base_filename}_{i}.nii.gz"))
+        nib_frame = nib.nifti1.Nifti1Image(frame, image.affine)
+        nib.nifti1.save(
+            nib_frame, os.path.join(output_dir, f"{base_filename}_{i}.nii.gz")
+        )
 
 
 class DataFolder:
@@ -210,7 +212,6 @@ class NiftiDataFolder(DataFolder):
 
 
 if __name__ == "__main__":
-
     data_folder = NiftiDataFolder(os.path.join(ROOT_DIR, "sample_data"))
     data_folder.print_filenames()
     data_folder.print_filepaths()
