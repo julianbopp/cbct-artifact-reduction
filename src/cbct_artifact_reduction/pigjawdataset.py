@@ -98,6 +98,13 @@ class InpaintingSliceDataset(Dataset):
         slice_path = self.lakefs_loader.get_file(item_info.relative_slice_path)
         mask_path = self.lakefs_loader.get_file(item_info.relative_mask_path)
 
+        assert (
+            slice_path is not None
+        ), f"File {item_info.relative_slice_path} not found on lakeFS"
+        assert (
+            mask_path is not None
+        ), f"File {item_info.relative_mask_path} not found on lakeFS"
+
         slice_np_array = single_nifti_to_numpy(slice_path)
         mask_np_array = single_nifti_to_numpy(mask_path)
 
