@@ -3,7 +3,11 @@ import os
 import numpy as np
 from torch.utils.data.dataset import Dataset
 
-from cbct_artifact_reduction.dataprocessing import single_nifti_to_numpy
+from cbct_artifact_reduction.dataprocessing import (
+    min_max_normalize,
+    remove_outliers,
+    single_nifti_to_numpy,
+)
 from cbct_artifact_reduction.lakefs_own import CustomBoto3Client
 
 
@@ -108,7 +112,24 @@ class InpaintingSliceDataset(Dataset):
         slice_np_array = single_nifti_to_numpy(slice_path)
         mask_np_array = single_nifti_to_numpy(mask_path)
 
+        slice_np_array = self.dataprocessing(slice_np_array)
+
         return slice_np_array[np.newaxis, ...], mask_np_array[np.newaxis, ...]
+
+    def dataprocessing(self, np_array: np.ndarray) -> np.ndarray:
+        """Preprocesses the numpy array by normalizing it and removing outliers.
+
+        Args:
+            nparray (np.ndarray): The numpy array to preprocess.
+
+        Returns:
+            np.ndarray: The preprocessed numpy array.
+        """
+
+        outliers_removed = remove_outliers(np_array)
+        normalized = min_max_normalize(outliers_removed)
+
+        return normalized
 
     def __len__(self) -> int:
         return len(self.dataset)
