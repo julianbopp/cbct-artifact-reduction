@@ -45,7 +45,7 @@ def model_and_diffusion_defaults():
     Defaults for image training.
     """
     res = dict(
-        image_size=64,
+        image_size=256,
         num_channels=128,
         num_res_blocks=2,
         num_heads=4,
@@ -167,7 +167,7 @@ def create_model(
         image_size=image_size,
         in_channels=3,
         model_channels=num_channels,
-        out_channels=(3 if not learn_sigma else 6),
+        out_channels=1 if not learn_sigma else 2,  # (3 if not learn_sigma else 6),
         num_res_blocks=num_res_blocks,
         attention_resolutions=tuple(attention_ds),
         dropout=dropout,
