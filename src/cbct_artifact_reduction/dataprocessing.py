@@ -20,7 +20,19 @@ def create_binary_threshold_mask(np_array, threshold):
     return np.where(np_array > threshold, 1, 0)
 
 
-def min_max_normalize(img):
+def remove_outliers(
+    img: np.ndarray, lower_quantile: float = 0.001, upper_quantile: float = 0.999
+):
+    """Clip the given image to the lower and upper quantiles."""
+
+    return np.clip(
+        img,
+        np.quantile(img, lower_quantile),
+        np.quantile(img, upper_quantile),
+    )
+
+
+def min_max_normalize(img: np.ndarray):
     """Function used to normalize image to range [0, 1]."""
 
     _min = img.min()
