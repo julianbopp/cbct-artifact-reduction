@@ -1,7 +1,7 @@
 import os
+import shutil
 import tempfile
 
-import nibabel as nib
 import numpy as np
 
 from cbct_artifact_reduction.dataprocessing import (
@@ -11,11 +11,13 @@ from cbct_artifact_reduction.dataprocessing import (
 )
 
 
-def planmeca_folder_to_nifti(file_path: str, output_path: str):
+def planmeca_folder_to_nifti(file_path: str):
     filename = get_filename(file_path)
     temp_dir = tempfile.mkdtemp()
     if filename.endswith(".tar.gz"):
         extract_tar_gz(file_path, temp_dir)
+    else:
+        shutil.copy(file_path, temp_dir)
 
     corrected_raw_dir = None
     fdk_3DII_conf_path = None
@@ -62,11 +64,8 @@ def planmeca_folder_to_nifti(file_path: str, output_path: str):
         data = np.flip(data, axis=0)
         vol[..., index] = data
 
-    # Save tensor as nifti
-    nifti_obj = nib.nifti1.Nifti1Image(vol, affine=np.eye(4))
-    nib.nifti1.save(nifti_obj, os.path.join(output_path))
-
-    return width, height
+    dataDict = {"numpy_array": vol, "width": width, "height": height}
+    return dataDict
 
 
 def accuitomo_folder_to_nifti(folder_path: str, output_path: str):
