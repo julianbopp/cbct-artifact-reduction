@@ -11,7 +11,7 @@ from cbct_artifact_reduction.dataprocessing import (
 )
 
 
-def planmeca_folder_to_nifti(file_path: str):
+def planmeca_folder_to_numpy(file_path: str):
     filename = get_filename(file_path)
     temp_dir = tempfile.mkdtemp()
     if filename.endswith(".tar.gz"):
