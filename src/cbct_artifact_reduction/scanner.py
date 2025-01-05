@@ -12,6 +12,14 @@ from cbct_artifact_reduction.dataprocessing import (
 
 
 def planmeca_folder_to_numpy(file_path: str):
+    """Convert a planmeca folder to a numpy array.
+
+    Args:
+        file_path (str): The path to the folder containing the data. Can be a tar.gz file or a folder.
+
+    Returns:
+        numpy_array (np.ndarray): The numpy array containing the data. The shape of the array is (height, width, num_frames).
+    """
     filename = get_filename(file_path)
     temp_dir = tempfile.mkdtemp()
     if filename.endswith(".tar.gz"):
@@ -64,8 +72,7 @@ def planmeca_folder_to_numpy(file_path: str):
         data = np.flip(data, axis=0)
         vol[..., index] = data
 
-    dataDict = {"numpy_array": vol, "width": width, "height": height}
-    return dataDict
+    return vol
 
 
 def accuitomo_folder_to_nifti(folder_path: str, output_path: str):
