@@ -3,6 +3,7 @@ import os
 import numpy as np
 from torch.utils.data.dataset import Dataset
 
+import cbct_artifact_reduction.implantmaskcreator as imc
 from cbct_artifact_reduction.dataprocessing import (
     filename_without_extension,
     min_max_normalize,
@@ -65,6 +66,8 @@ class InpaintingSliceDataset(Dataset):
 
         self.data_extension = ".nii.gz"
         self.dataset = self.prepare_dataset()
+        # TODO: Don't hardcode the resolution
+        self.mask_creator = imc.ImplantMaskCreator((256, 256))
 
     def prepare_dataset(self) -> list[SingleDataPoint]:
         """Create a list of SingleDataPoint objects containing the slices and masks that are specified in data_specification_path.
@@ -123,6 +126,11 @@ class InpaintingSliceDataset(Dataset):
 
         slice_np_array = single_nifti_to_numpy(slice_path)
         mask_np_array = single_nifti_to_numpy(mask_path)
+        # TODO: Clean up old mask_np_array. To clarify: I used to create the masks beforehand and save them as niftis. Now I create them on the fly.
+        # TODO: Don't hardcode the amount of implants. Specify it somewhere.
+        mask_np_array = self.mask_creator.generate_mask_with_random_amount_of_implants(
+            1, 4
+        )
 
         if item_info is not None:
             try:
