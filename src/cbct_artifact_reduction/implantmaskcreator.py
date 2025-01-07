@@ -76,6 +76,19 @@ class ImplantMaskCreator:
         mask = np.clip(mask, 0, 1)
         return mask
 
+    def generate_mask_with_random_amount_of_implants(self, lower, upper) -> np.ndarray:
+        """Generate a mask with a random amount of implants.
+
+        Args:
+            lower (int): The lower bound for the number of implants.
+            upper (int): The upper bound for the number of implants.
+
+        Returns:
+            np.ndarray: The generated mask.
+        """
+        n = np.random.randint(lower, upper)
+        return self.generate_mask_with_n_implants(n)
+
 
 if __name__ == "__main__":
     creator = ImplantMaskCreator((256, 256))
