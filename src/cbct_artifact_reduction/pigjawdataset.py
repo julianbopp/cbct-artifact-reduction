@@ -144,8 +144,8 @@ class InpaintingSliceDataset(Dataset):
 
         if item_info is not None:
             try:
-                scanner = item_info["scanner"]
-                fov = item_info["fov"]
+                scanner = item_info["scanner"][0]
+                fov = item_info["fov"][0]
                 processed_slice_np_array = self.dataprocessing(
                     slice_np_array, scanner, fov
                 )
