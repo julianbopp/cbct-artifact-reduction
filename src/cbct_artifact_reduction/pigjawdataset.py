@@ -5,7 +5,6 @@ from torch.utils.data.dataset import Dataset
 
 import cbct_artifact_reduction.implantmaskcreator as imc
 from cbct_artifact_reduction.dataprocessing import (
-    filename_without_extension,
     min_max_normalize,
     remove_outliers,
     single_nifti_to_numpy,
@@ -87,8 +86,8 @@ class InpaintingSliceDataset(Dataset):
                 relative_mask_path = os.path.join(
                     self.relative_mask_directory_path, mask_filename
                 )
-
-                id = int(filename_without_extension(slice_filename))
+                # TODO: Don't hardcode the id length. Specify it somewhere or use regex or some function.
+                id = int(slice_filename[0:3])
                 data_info = lookup_num_in_datatable(id)
 
                 dataset.append(
