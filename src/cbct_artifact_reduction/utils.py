@@ -1,6 +1,8 @@
 import os
 import random
 
+import pandas as pd
+
 # Save project root directory
 ROOT_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
@@ -9,6 +11,25 @@ DATA_DIR = os.path.join(ROOT_DIR, "data")
 CODE_DIR = os.path.join(ROOT_DIR, "code")
 OUTPUT_DIR = os.path.join(ROOT_DIR, "output")
 FRAME_DIR = os.path.join(ROOT_DIR, "output", "frames")
+
+
+def lookup_num_in_datatable(num: int):
+    """Looks up a row in the data.csv file and returns it as a dictionary.
+
+    Args:
+        num (int): The id of the row to look up.
+    Returns:
+        dict: The row as a dictionary.
+    Throws:
+        KeyError: If the id is not found in the data.csv file.
+    """
+    df = pd.read_csv(os.path.join(ROOT_DIR, "data.csv"))
+    try:
+        match = df.loc[df["id"] == num]
+        return match.to_dict(orient="list")
+    except KeyError:
+        print(f"Could not find id {num} in data.csv")
+        return None
 
 
 def get_scanner_from_num(num: int):
