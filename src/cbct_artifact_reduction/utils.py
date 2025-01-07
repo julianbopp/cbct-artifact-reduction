@@ -18,8 +18,10 @@ def lookup_num_in_datatable(num: int):
 
     Args:
         num (int): The id of the row to look up.
+
     Returns:
         dict: The row as a dictionary.
+
     Throws:
         KeyError: If the id is not found in the data.csv file.
     """
