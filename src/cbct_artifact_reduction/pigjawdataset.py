@@ -4,11 +4,13 @@ import numpy as np
 from torch.utils.data.dataset import Dataset
 
 from cbct_artifact_reduction.dataprocessing import (
+    filename_without_extension,
     min_max_normalize,
     remove_outliers,
     single_nifti_to_numpy,
 )
 from cbct_artifact_reduction.lakefs_own import CustomBoto3Client
+from cbct_artifact_reduction.utils import lookup_num_in_datatable
 
 
 class SingleDataPoint:
@@ -19,15 +21,19 @@ class SingleDataPoint:
         mask_path (str): The path to the mask.
     """
 
-    def __init__(self, relative_slice_path: str, relative_mask_path: str):
+    def __init__(
+        self, relative_slice_path: str, relative_mask_path: str, data_info: dict | None
+    ):
         """Initializes a SingleDataPoint object.
 
         Args:
-            relative_slice_path (str): The path to the slice
+            relative_slice_path (str): The path to the slice.
             relative_mask_path (str): The path to the mask.
+            data_info (dict): Information about the data.
         """
         self.relative_slice_path = relative_slice_path
         self.relative_mask_path = relative_mask_path
+        self.data_info = data_info
 
 
 class InpaintingSliceDataset(Dataset):
@@ -79,7 +85,12 @@ class InpaintingSliceDataset(Dataset):
                     self.relative_mask_directory_path, mask_filename
                 )
 
-                dataset.append(SingleDataPoint(relative_slice_path, relative_mask_path))
+                id = int(filename_without_extension(slice_filename))
+                data_info = lookup_num_in_datatable(id)
+
+                dataset.append(
+                    SingleDataPoint(relative_slice_path, relative_mask_path, data_info)
+                )
 
         return dataset
 
