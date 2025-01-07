@@ -108,34 +108,60 @@ class InpaintingSliceDataset(Dataset):
 
         assert 0 <= idx < self.__len__(), f"Index {idx} out of bounds"
 
-        item_info = self.dataset[idx]
+        item = self.dataset[idx]
+        item_info = item.data_info
 
-        slice_path = self.lakefs_loader.get_file(item_info.relative_slice_path)
-        mask_path = self.lakefs_loader.get_file(item_info.relative_mask_path)
+        slice_path = self.lakefs_loader.get_file(item.relative_slice_path)
+        mask_path = self.lakefs_loader.get_file(item.relative_mask_path)
 
         assert (
             slice_path is not None
-        ), f"File {item_info.relative_slice_path} not found on lakeFS"
+        ), f"File {item.relative_slice_path} not found on lakeFS"
         assert (
             mask_path is not None
-        ), f"File {item_info.relative_mask_path} not found on lakeFS"
+        ), f"File {item.relative_mask_path} not found on lakeFS"
 
         slice_np_array = single_nifti_to_numpy(slice_path)
         mask_np_array = single_nifti_to_numpy(mask_path)
 
-        slice_np_array = self.dataprocessing(slice_np_array)
+        if item_info is not None:
+            try:
+                scanner = item_info["scanner"]
+                fov = item_info["fov"]
+                processed_slice_np_array = self.dataprocessing(
+                    slice_np_array, scanner, fov
+                )
+            except KeyError:
+                print(f"No scanner information for item at slice_path: {slice_path}")
+                processed_slice_np_array = self.dataprocessing(slice_np_array)
+        else:
+            processed_slice_np_array = self.dataprocessing(slice_np_array)
 
-        return slice_np_array[np.newaxis, ...], mask_np_array[np.newaxis, ...]
+        return processed_slice_np_array[np.newaxis, ...], mask_np_array[np.newaxis, ...]
 
-    def dataprocessing(self, np_array: np.ndarray) -> np.ndarray:
-        """Preprocesses the numpy array by normalizing it and removing outliers.
+    def dataprocessing(
+        self, np_array: np.ndarray, scanner: str | None = None, fov: str | None = None
+    ) -> np.ndarray:
+        """Preprocesses the numpy array by normalizing it and removing outliers. Addiotionally, if scanner and fov are provided, the array is preprocessed accordingly.
 
         Args:
             nparray (np.ndarray): The numpy array to preprocess.
+            scanner (str, optional): The scanner used for the slice. Defaults to None.
+            fov (str, optional): The field of view of the slice. Defaults to None.
 
         Returns:
             np.ndarray: The preprocessed numpy array.
         """
+        if scanner is not None and fov is not None:
+            if scanner == "planmeca" and fov == "small":
+                np_array = -np.log(np_array / (3591 * 2.27))
+            elif scanner == "planmeca" and fov == "large":
+                np_array = -np.log(np_array / (4326 * 2.27))
+            elif scanner == "axeos":
+                np_array = -np.log(np_array / (2 * 10**16))
+            else:
+                # TODO: Add more preprocessing for other scanners. Waiting for the details from Susanne.
+                print(f"No extra preprocessing for scanner {scanner} and fov {fov}")
 
         outliers_removed = remove_outliers(np_array)
         normalized = min_max_normalize(outliers_removed)
