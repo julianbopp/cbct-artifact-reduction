@@ -8,23 +8,36 @@ import scipy.stats as stats
 
 def generateRandomHeight(h_loc, h_scale):
     h = stats.norm.rvs(loc=h_loc, scale=h_scale)
-    return floor(h)
+    height = abs(floor(h))
+    if height == 0:
+        return 1
+    else:
+        return height
 
 
 def generateRandomWidth(w_loc, w_scale):
     w = stats.norm.rvs(loc=w_loc, scale=w_scale)
-    return floor(w)
+    w = abs(floor(w))
+
+    if w == 0:
+        return 1
+    else:
+        return w
 
 
 def generateRotationAngle(r_loc, r_scale):
     r = stats.norm.rvs(loc=r_loc, scale=r_scale)
-    return floor(r)
+    r = abs(floor(r))
+    if r == 0:
+        return 0
+    else:
+        return r
 
 
 def generateCoordinates(x_loc, x_scale, y_loc, y_scale):
     x = stats.uniform.rvs(loc=x_loc, scale=x_scale)
     y = stats.norm.rvs(loc=y_loc, scale=y_scale)
-    return floor(x), floor(y)
+    return abs(floor(x)), abs(floor(y))
 
 
 class ImplantMaskCreator:
