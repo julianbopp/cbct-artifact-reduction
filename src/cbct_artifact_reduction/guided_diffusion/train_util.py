@@ -185,7 +185,7 @@ class TrainLoop:
         self.log_step()
 
     def forward_backward(self, ground_truth, masked_image, mask):
-        # Concatenate the inputs to the model into a signel batch.
+        # Concatenate the inputs to the model into a single batch.
         # Batch has shape [batch_size, 3, height, width]
         batch = th.cat([ground_truth, masked_image, mask], dim=1)
         cond = {}
