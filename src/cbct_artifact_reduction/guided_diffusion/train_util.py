@@ -155,7 +155,12 @@ class TrainLoop:
             not self.lr_anneal_steps
             or self.step + self.resume_step < self.lr_anneal_steps
         ):
-            batch, cond = next(self.data)
+            try:
+                batch, cond = next(self.data)
+            except StopIteration:
+                print("Epoch done")
+                break
+
             batch = batch.float()
             cond = cond.float()
 
