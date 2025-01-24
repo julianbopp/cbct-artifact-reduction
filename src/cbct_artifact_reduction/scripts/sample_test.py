@@ -1,3 +1,4 @@
+import argparse
 import os
 from datetime import datetime
 
@@ -6,11 +7,11 @@ import cbct_artifact_reduction.pigjawdataset as dataset
 from cbct_artifact_reduction import lakefs_own
 from cbct_artifact_reduction.guided_diffusion import dist_util, logger
 from cbct_artifact_reduction.guided_diffusion.script_util import (
+    add_dict_to_argparser,
     args_to_dict,
     create_model_and_diffusion,
     model_and_diffusion_defaults,
 )
-from cbct_artifact_reduction.scripts.train_test import create_argparser
 from torch.utils.data import DataLoader
 
 
@@ -70,6 +71,26 @@ def main():
         model.convert_to_fp16()
     model.eval()
     pass
+
+
+def create_argparser():
+    defaults = dict(
+        data_dir="",
+        log_dir="",
+        # gt_dir="",
+        adapted_samples="",
+        sub_batch=16,
+        clip_denoised=True,
+        num_samples=1,
+        batch_size=1,
+        use_ddim=False,
+        model_path="",
+        num_ensemble=1,
+    )
+    defaults.update(model_and_diffusion_defaults())
+    parser = argparse.ArgumentParser()
+    add_dict_to_argparser(parser, defaults)
+    return parser
 
 
 if __name__ == "__main__":
