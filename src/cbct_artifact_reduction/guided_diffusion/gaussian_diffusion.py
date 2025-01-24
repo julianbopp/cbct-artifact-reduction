@@ -928,7 +928,7 @@ class GaussianDiffusion:
                 ModelVarType.LEARNED_RANGE,
             ]:
                 B = x_t.shape[0]
-                C = goal.shape[0]
+                C = goal.shape[1]
 
                 assert model_output.shape == (B, C * 2, *x_t.shape[2:])
                 model_output, model_var_values = th.split(model_output, C, dim=1)
