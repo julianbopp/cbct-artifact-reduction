@@ -606,7 +606,8 @@ class GaussianDiffusion:
             ::-1
         ]  # Reverse the list of timesteps 0, 1, 2,..., 100 -> 100, 99, 98,..., 0
 
-        masked_image_and_mask = img[:, 1 : shape[1], ...]
+        masked_image = img[:, 1:2, ...]
+        mask = img[:, 2:3, ...]
 
         if progress:
             # Lazy import so that we don't depend on tqdm.
@@ -616,6 +617,8 @@ class GaussianDiffusion:
 
         for i in indices:
             t = th.tensor([i] * shape[0], device=device)
+            if img.shape[1] != 3:
+                img = th.cat((img, masked_image, mask), dim=1).float()
             with th.no_grad():
                 out = self.p_sample_inpainting(
                     model,
@@ -627,7 +630,7 @@ class GaussianDiffusion:
                     model_kwargs=model_kwargs,
                 )
                 yield out
-                img = out["sample"]
+                img = out["sample"]  # This is the reduced noise image and has 1 channel
 
     def p_sample_loop_progressive(
         self,
