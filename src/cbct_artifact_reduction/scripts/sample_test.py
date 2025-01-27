@@ -51,6 +51,11 @@ def main():
 
     num_samples = 10
 
+    model.to(dist_util.dev())
+    if args.use_fp16:
+        model.convert_to_fp16()
+    model.eval()
+
     for i in range(num_samples):
         ground_truth, mask = next(data)
         masked_image = ground_truth * (1 - mask)
@@ -78,10 +83,6 @@ def main():
 
             print(f"Saved sample {i}")
 
-    model.to(dist_util.dev())
-    if args.use_fp16:
-        model.convert_to_fp16()
-    model.eval()
     pass
 
 
