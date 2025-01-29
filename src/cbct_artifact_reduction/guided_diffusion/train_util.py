@@ -38,6 +38,7 @@ class TrainLoop:
         schedule_sampler=None,
         weight_decay=0.0,
         lr_anneal_steps=0,
+        step=0,
     ):
         self.model = model
         self.diffusion = diffusion
@@ -59,7 +60,7 @@ class TrainLoop:
         self.weight_decay = weight_decay
         self.lr_anneal_steps = lr_anneal_steps
 
-        self.step = 0
+        self.step = step
         self.resume_step = 0
         self.global_batch = self.batch_size * dist.get_world_size()
 
@@ -159,7 +160,7 @@ class TrainLoop:
                 batch, cond = next(self.data)
             except StopIteration:
                 print("Epoch done")
-                break
+                return self.step
 
             batch = batch.float()
             cond = cond.float()
