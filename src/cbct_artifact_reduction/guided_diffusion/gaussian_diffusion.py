@@ -1,4 +1,4 @@
-"""
+"""gaussiand
 This code started out as a PyTorch port of Ho et al's diffusion models:
 https://github.com/hojonathanho/diffusion/blob/1e0dceb3b3495bbe19116a5e1b3596cd0706c543/diffusion_tf/diffusion_utils_2.py
 
@@ -909,7 +909,7 @@ class GaussianDiffusion:
         :return: a dict with the key "loss" containing a tensor of shape [N].
                  Some mean or variance settings may also have other keys.
         """
-        print()
+
         if model_kwargs is None:
             model_kwargs = {}
         if noise is None:
