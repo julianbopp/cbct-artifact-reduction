@@ -909,6 +909,7 @@ class GaussianDiffusion:
         :return: a dict with the key "loss" containing a tensor of shape [N].
                  Some mean or variance settings may also have other keys.
         """
+        print()
         if model_kwargs is None:
             model_kwargs = {}
         if noise is None:

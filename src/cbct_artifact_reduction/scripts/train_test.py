@@ -50,12 +50,13 @@ def main():
 
     num_epochs = 10
     logger.log("training...")
+    step = 0
     for epoch in range(num_epochs):
         logger.log(f"epoch {epoch+1}/{num_epochs}")
         dataloader = DataLoader(inpaintingSliceDataset, batch_size=1, shuffle=True)
         data = iter(dataloader)
 
-        TrainLoop(
+        step = TrainLoop(
             model=model,
             diffusion=diffusion,
             data=data,
@@ -71,6 +72,7 @@ def main():
             schedule_sampler=schedule_sampler,
             weight_decay=args.weight_decay,
             lr_anneal_steps=args.lr_anneal_steps,
+            step=step if step else 0,
         ).run_loop()
 
 
