@@ -75,7 +75,7 @@ def main():
             sample = sample.detach().cpu()
             mask = mask.detach().cpu()
             ground_truth = ground_truth.detach().cpu()
-            sample = torch.cat([sample, ground_truth, mask], dim=0).numpy()
+            sample = torch.cat([sample, ground_truth, mask], dim=1).numpy()
             sample_nifti_object = nib.nifti1.Nifti1Image(sample, None)
             nib.save(
                 sample_nifti_object, os.path.join(SAMPLE_DIR, f"sample_{i}.nii.gz")
