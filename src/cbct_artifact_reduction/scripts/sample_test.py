@@ -41,7 +41,7 @@ def main():
         "processed_data/masks/256x256",
     )
 
-    dataloader = DataLoader(inpaintingSliceDataset, batch_size=1, shuffle=True)
+    dataloader = DataLoader(inpaintingSliceDataset, batch_size=args.batch_size, shuffle=True)
 
     data = iter(dataloader)
 
