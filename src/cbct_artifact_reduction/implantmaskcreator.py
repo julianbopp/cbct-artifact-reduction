@@ -27,7 +27,7 @@ def generateRandomWidth(w_loc, w_scale):
 
 def generateRotationAngle(r_loc, r_scale):
     r = stats.norm.rvs(loc=r_loc, scale=r_scale)
-    r = abs(floor(r))
+    r = floor(r)
     if r == 0:
         return 0
     else:
