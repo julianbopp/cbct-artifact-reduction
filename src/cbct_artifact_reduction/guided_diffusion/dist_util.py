@@ -12,9 +12,9 @@ import pandas as pd
 import numpy as np
 from io import BytesIO
 import blobfile as bf
-from mpi4py import MPI
 import torch as th
 import torch.distributed as dist
+from mpi4py import MPI
 
 # Change this to reflect your cluster layout.
 # The GPU for a given rank is (rank % GPUS_PER_NODE).
@@ -62,7 +62,6 @@ def dev():
     Get the device to use for torch.distributed.
     """
     if th.cuda.is_available():
-        print(f"Using cuda:{free_gpu_id}")
         return th.device(f"cuda:{free_gpu_id}")
     return th.device("cpu")
 
@@ -71,7 +70,7 @@ def load_state_dict(path, **kwargs):
     """
     Load a PyTorch file without redundant fetches across MPI ranks.
     """
-    chunk_size = 2 ** 30  # MPI has a relatively small size limit
+    chunk_size = 2**30  # MPI has a relatively small size limit
     if MPI.COMM_WORLD.Get_rank() == 0:
         with bf.BlobFile(path, "rb") as f:
             data = f.read()

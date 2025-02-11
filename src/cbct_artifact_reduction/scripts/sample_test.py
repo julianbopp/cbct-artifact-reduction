@@ -46,7 +46,7 @@ def main():
     data = iter(dataloader)
 
     model.load_state_dict(
-        dist_util.load_state_dict(args.model_path, map_location="cuda:0")
+        dist_util.load_state_dict(args.model_path, map_location="cpu")
     )
 
     num_samples = 10
