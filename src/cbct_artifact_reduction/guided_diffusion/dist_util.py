@@ -5,7 +5,12 @@ Helpers for distributed training.
 import io
 import os
 import socket
+import subprocess
 
+import sys
+import pandas as pd
+import numpy as np
+from io import BytesIO
 import blobfile as bf
 import torch as th
 import torch.distributed as dist
@@ -16,7 +21,17 @@ from mpi4py import MPI
 GPUS_PER_NODE = 8
 
 SETUP_RETRY_COUNT = 3
+def get_free_gpu():
+    gpu_stats = subprocess.check_output(["nvidia-smi", "--format=csv", "--query-gpu=memory.used,memory.free"])
+    gpu_df = pd.read_csv(BytesIO(gpu_stats), names=['memory.used', 'memory.free'], skiprows=1)
+    print('GPU usage:\n{}'.format(gpu_df))
+    gpu_df['memory.free'] = gpu_df['memory.free'].map(lambda x: x.rstrip(' [MiB]'))
+    gpu_df['memory.free'] = pd.to_numeric(gpu_df['memory.free'])
+    idx = gpu_df['memory.free'].idxmax()
+    print('Returning GPU{} with {} free MiB'.format(idx, gpu_df.iloc[idx]['memory.free']))
+    return idx
 
+free_gpu_id = get_free_gpu()
 
 def setup_dist():
     """
@@ -47,7 +62,7 @@ def dev():
     Get the device to use for torch.distributed.
     """
     if th.cuda.is_available():
-        return th.device("cuda")
+        return th.device(f"cuda:{free_gpu_id}")
     return th.device("cpu")
 
 
