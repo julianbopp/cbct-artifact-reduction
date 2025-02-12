@@ -6,8 +6,8 @@ import scipy.ndimage as ndimage
 import scipy.stats as stats
 
 
-def generateRandomHeight(h_loc, h_scale):
-    h = stats.norm.rvs(loc=h_loc, scale=h_scale)
+def generateRandomHeight(h_loc, h_scale, random_state=None):
+    h = stats.norm.rvs(loc=h_loc, scale=h_scale, random_state=random_state)
     height = abs(floor(h))
     if height == 0:
         return 1
@@ -15,8 +15,8 @@ def generateRandomHeight(h_loc, h_scale):
         return height
 
 
-def generateRandomWidth(w_loc, w_scale):
-    w = stats.norm.rvs(loc=w_loc, scale=w_scale)
+def generateRandomWidth(w_loc, w_scale, random_state=None):
+    w = stats.norm.rvs(loc=w_loc, scale=w_scale, random_state=random_state)
     w = abs(floor(w))
 
     if w == 0:
@@ -25,8 +25,8 @@ def generateRandomWidth(w_loc, w_scale):
         return w
 
 
-def generateRotationAngle(r_loc, r_scale):
-    r = stats.norm.rvs(loc=r_loc, scale=r_scale)
+def generateRotationAngle(r_loc, r_scale, random_state=None):
+    r = stats.norm.rvs(loc=r_loc, scale=r_scale, random_state=random_state)
     r = floor(r)
     if r == 0:
         return 0
@@ -34,9 +34,9 @@ def generateRotationAngle(r_loc, r_scale):
         return r
 
 
-def generateCoordinates(x_loc, x_scale, y_loc, y_scale):
-    x = stats.uniform.rvs(loc=x_loc, scale=x_scale)
-    y = stats.norm.rvs(loc=y_loc, scale=y_scale)
+def generateCoordinates(x_loc, x_scale, y_loc, y_scale, random_state=None):
+    x = stats.uniform.rvs(loc=x_loc, scale=x_scale, random_state=random_state)
+    y = stats.norm.rvs(loc=y_loc, scale=y_scale, random_state=random_state)
     return abs(floor(x)), abs(floor(y))
 
 
@@ -46,12 +46,30 @@ class ImplantMaskCreator:
     def __init__(self, resolution: tuple[int, int]) -> None:
         self.resolution = resolution
 
-    def generate_mask(self) -> np.ndarray:
-        h = generateRandomHeight(self.resolution[1] / 2, self.resolution[0] / 32)
-        w = generateRandomWidth(self.resolution[1] * 7 / 110, self.resolution[1] / 64)
+    def generate_mask(self, random_state=None) -> np.ndarray:
+        h = generateRandomHeight(
+            self.resolution[1] / 2,
+            self.resolution[0] / 32,
+            random_state=random_state,
+        )
+        w = generateRandomWidth(
+            self.resolution[1] * 7 / 110,
+            self.resolution[1] / 64,
+            random_state=random_state,
+        )
 
-        x, y = generateCoordinates(0, self.resolution[0], self.resolution[1] // 2, 0.1)
-        r = generateRotationAngle(0, 20)
+        x, y = generateCoordinates(
+            0,
+            self.resolution[0],
+            self.resolution[1] // 2,
+            0.1,
+            random_state=random_state,
+        )
+        r = generateRotationAngle(
+            0,
+            20,
+            random_state=random_state,
+        )
 
         rectangle = np.ones((h, w), dtype=int)
 
@@ -80,16 +98,19 @@ class ImplantMaskCreator:
 
         return mask
 
-    def generate_mask_with_n_implants(self, n: int) -> np.ndarray:
+    def generate_mask_with_n_implants(self, n: int, random_state=None) -> np.ndarray:
         mask = np.zeros(self.resolution, dtype=int)
         for _ in range(n):
-            implant = self.generate_mask()
+            random_state = hash(random_state)
+            implant = self.generate_mask(random_state=random_state)
             mask = mask + implant
 
         mask = np.clip(mask, 0, 1)
         return mask
 
-    def generate_mask_with_random_amount_of_implants(self, lower, upper) -> np.ndarray:
+    def generate_mask_with_random_amount_of_implants(
+        self, lower, upper, random_state=None
+    ) -> np.ndarray:
         """Generate a mask with a random amount of implants.
 
         Args:
@@ -100,7 +121,7 @@ class ImplantMaskCreator:
             np.ndarray: The generated mask.
         """
         n = np.random.randint(lower, upper)
-        return self.generate_mask_with_n_implants(n)
+        return self.generate_mask_with_n_implants(n, random_state=random_state)
 
 
 if __name__ == "__main__":
