@@ -1,3 +1,4 @@
+import hashlib
 import os
 import re
 
@@ -125,21 +126,19 @@ class InpaintingSliceDataset(Dataset):
         item_info = item.data_info
 
         slice_path = self.lakefs_loader.get_file(item.relative_slice_path)
-        mask_path = self.lakefs_loader.get_file(item.relative_mask_path)
 
-        assert (
-            slice_path is not None
-        ), f"File {item.relative_slice_path} not found on lakeFS"
-        assert (
-            mask_path is not None
-        ), f"File {item.relative_mask_path} not found on lakeFS"
+        assert slice_path is not None, (
+            f"File {item.relative_slice_path} not found on lakeFS"
+        )
+
+        slice_hash = int.from_bytes(
+            hashlib.sha256(slice_path.encode("utf-8")).digest()[:4], "little"
+        )
 
         slice_np_array = single_nifti_to_numpy(slice_path)
-        mask_np_array = single_nifti_to_numpy(mask_path)
-        # TODO: Clean up old mask_np_array. To clarify: I used to create the masks beforehand and save them as niftis. Now I create them on the fly.
         # TODO: Don't hardcode the amount of implants. Specify it somewhere.
         mask_np_array = self.mask_creator.generate_mask_with_random_amount_of_implants(
-            1, 4
+            1, 4, random_state=slice_hash
         )
 
         if item_info is not None:
