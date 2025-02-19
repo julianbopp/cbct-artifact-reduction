@@ -1,3 +1,4 @@
+import hashlib
 from math import floor
 
 import matplotlib.pyplot as plt
@@ -101,7 +102,10 @@ class ImplantMaskCreator:
     def generate_mask_with_n_implants(self, n: int, random_state=None) -> np.ndarray:
         mask = np.zeros(self.resolution, dtype=int)
         for _ in range(n):
-            random_state = hash(random_state)
+            random_state = int.from_bytes(
+                hashlib.sha256(str(random_state).encode("utf-8")).digest()[:4], "little"
+            )
+
             implant = self.generate_mask(random_state=random_state)
             mask = mask + implant
 
@@ -120,6 +124,7 @@ class ImplantMaskCreator:
         Returns:
             np.ndarray: The generated mask.
         """
+        np.random.seed(random_state)
         n = np.random.randint(lower, upper)
         return self.generate_mask_with_n_implants(n, random_state=random_state)
 
