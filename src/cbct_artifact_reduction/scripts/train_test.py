@@ -52,8 +52,10 @@ def main():
     logger.log("training...")
     step = 0
     for epoch in range(num_epochs):
-        logger.log(f"epoch {epoch+1}/{num_epochs}")
-        dataloader = DataLoader(inpaintingSliceDataset, batch_size=1, shuffle=True)
+        logger.log(f"epoch {epoch + 1}/{num_epochs}")
+        dataloader = DataLoader(
+            inpaintingSliceDataset, batch_size=args.batch_size, shuffle=True
+        )
         data = iter(dataloader)
 
         step = TrainLoop(
