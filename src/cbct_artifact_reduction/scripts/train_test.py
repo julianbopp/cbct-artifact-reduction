@@ -76,6 +76,8 @@ def main():
             lr_anneal_steps=args.lr_anneal_steps,
             step=step if step else 0,
         ).run_loop()
+        # Make sure to not resume checkpoint again after first epoch:
+        args.resume_checkpoint = ""
 
 
 def create_argparser():
