@@ -59,6 +59,7 @@ class InpaintingSliceDataset(Dataset):
         data_specification_path: str,
         slice_directory_path: str,
         mask_directory_path: str,
+        random_masks: bool = True,
     ) -> None:
         """Initializes the dataset.
 
@@ -74,6 +75,7 @@ class InpaintingSliceDataset(Dataset):
         self.data_specification_path = data_specification_path
         self.relative_slice_directory_path = slice_directory_path
         self.relative_mask_directory_path = mask_directory_path
+        self.random_masks = random_masks
 
         self.data_extension = ".nii.gz"
         self.dataset = self.prepare_dataset()
@@ -131,9 +133,12 @@ class InpaintingSliceDataset(Dataset):
             f"File {item.relative_slice_path} not found on lakeFS"
         )
 
-        slice_hash = int.from_bytes(
-            hashlib.sha256(slice_path.encode("utf-8")).digest()[:4], "little"
-        )
+        if self.random_masks:
+            slice_hash = None
+        else:
+            slice_hash = int.from_bytes(
+                hashlib.sha256(slice_path.encode("utf-8")).digest()[:4], "little"
+            )
 
         slice_np_array = single_nifti_to_numpy(slice_path)
         # TODO: Don't hardcode the amount of implants. Specify it somewhere.
