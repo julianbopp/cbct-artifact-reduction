@@ -150,7 +150,11 @@ class InpaintingSliceDataset(Dataset):
         return processed_slice_np_array[np.newaxis, ...], mask_np_array[np.newaxis, ...]
 
     def dataprocessing(
-        self, np_array: np.ndarray, scanner: str | None = None, fov: str | None = None
+        self,
+        np_array: np.ndarray,
+        scanner: str | None = None,
+        fov: str | None = None,
+        scanner_processing: bool = False,
     ) -> np.ndarray:
         """Preprocesses the numpy array by normalizing it and removing outliers. Addiotionally, if scanner and fov are provided, the array is preprocessed accordingly.
 
@@ -158,20 +162,21 @@ class InpaintingSliceDataset(Dataset):
             nparray (np.ndarray): The numpy array to preprocess.
             scanner (str, optional): The scanner used for the slice. Defaults to None.
             fov (str, optional): The field of view of the slice. Defaults to None.
-
+            scanner_processing (bool, optional): Whether to apply scanner specific preprocessing. Defaults to False.
         Returns:
             np.ndarray: The preprocessed numpy array.
         """
-        if scanner is not None and fov is not None:
-            if scanner == "planmeca" and fov == "small":
-                np_array = -np.log(np_array / (3591 * 2.27))
-            elif scanner == "planmeca" and fov == "large":
-                np_array = -np.log(np_array / (4326 * 2.27))
-            elif scanner == "axeos":
-                np_array = -np.log(np_array / (2 * 10**16))
-            else:
-                # TODO: Add more preprocessing for other scanners. Waiting for the details from Susanne.
-                print(f"No extra preprocessing for scanner {scanner} and fov {fov}")
+        if scanner_processing:
+            if scanner is not None and fov is not None:
+                if scanner == "planmeca" and fov == "small":
+                    np_array = -np.log(np_array / (3591 * 2.27))
+                elif scanner == "planmeca" and fov == "large":
+                    np_array = -np.log(np_array / (4326 * 2.27))
+                elif scanner == "axeos":
+                    np_array = -np.log(np_array / (2 * 10**16))
+                else:
+                    # TODO: Add more preprocessing for other scanners. Waiting for the details from Susanne.
+                    print(f"No extra preprocessing for scanner {scanner} and fov {fov}")
 
         outliers_removed = remove_outliers(np_array)
         normalized = min_max_normalize(outliers_removed)
