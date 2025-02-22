@@ -1,16 +1,19 @@
 #!/bin/bash
 # Run this from the cbct-artifact-reduction folder
 
-ARG=$!
 
 if [[ -z "$1" ]]; then
-    echo "Usage: ./run train|sample"
+    echo "Usage: ./run train|sample|resume"
     exit 1
 elif [[ "$1" == "sample" ]]; then
     echo "Input: sample. OK."
 elif [[ "$1" == "train" ]]; then
     echo "Input: train. OK."
+elif [[ "$1" == "resume" ]]; then
+    echo "Input: resume. OK."
 else
+    echo "Usage: ./run train|sample|resume"
+    exit 1
     echo "Invalid Input. Leaving..."
     exit 1
 fi
@@ -48,7 +51,11 @@ if [[ "$1" == "train" ]]; then
     echo "Starting training"
     echo "Running $TRAIN_SCRIPT"
     python $TRAIN_SCRIPT $TRAIN_FLAGS $MODEL_FLAGS $DIFFUSION_FLAGS
-
+elif [[ "$1" == "resume" ]]; then
+    echo "Resume training"
+    echo "Using model: $MODEL_PATH"
+    echo "Running $TRAIN_SCRIPT"
+    python $TRAIN_SCRIPT --resume_checkpoint $MODEL_PATH $TRAIN_FLAGS $MODEL_FLAGS $DIFFUSION_FLAGS
 elif [[ "$1" == "sample" ]]; then
     echo "Starting sampling"
     echo "Running $SAMPLE_SCRIPT"
