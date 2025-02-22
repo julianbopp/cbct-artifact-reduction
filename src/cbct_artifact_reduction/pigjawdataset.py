@@ -30,21 +30,16 @@ class SingleDataPoint:
 
     Attributes:
         slice_path (str): The path to the slice
-        mask_path (str): The path to the mask.
     """
 
-    def __init__(
-        self, relative_slice_path: str, relative_mask_path: str, data_info: dict | None
-    ):
+    def __init__(self, relative_slice_path: str, data_info: dict | None):
         """Initializes a SingleDataPoint object.
 
         Args:
             relative_slice_path (str): The path to the slice.
-            relative_mask_path (str): The path to the mask.
             data_info (dict): Information about the data.
         """
         self.relative_slice_path = relative_slice_path
-        self.relative_mask_path = relative_mask_path
         self.data_info = data_info
 
 
@@ -58,7 +53,6 @@ class InpaintingSliceDataset(Dataset):
         lakefs_loader: CustomBoto3Client,
         data_specification_path: str,
         slice_directory_path: str,
-        mask_directory_path: str,
         random_masks: bool = True,
     ) -> None:
         """Initializes the dataset.
@@ -67,14 +61,12 @@ class InpaintingSliceDataset(Dataset):
             lakefs_loader (boto3client): The LakeFSLoader object used to load data from LakeFS.
             data_specification_path (str): The path to the data specification file.
             relative_slice_directory_path (str): The relative path to the remote/local directory containing the slices.
-            relative_mask_directory_path (str): The relative to the remote/local directory containing the masks.
         """
 
         super().__init__()
         self.lakefs_loader = lakefs_loader
         self.data_specification_path = data_specification_path
         self.relative_slice_directory_path = slice_directory_path
-        self.relative_mask_directory_path = mask_directory_path
         self.random_masks = random_masks
 
         self.data_extension = ".nii.gz"
@@ -92,21 +84,16 @@ class InpaintingSliceDataset(Dataset):
         with open(self.data_specification_path, "r") as f:
             next(f, None)  # Skip the header row
             for line in f:
-                slice_filename, mask_filename = line.strip().split(",")
+                slice_filename = line.strip()
 
                 relative_slice_path = os.path.join(
                     self.relative_slice_directory_path, slice_filename
-                )
-                relative_mask_path = os.path.join(
-                    self.relative_mask_directory_path, mask_filename
                 )
                 # TODO: Don't hardcode the id length. Specify it somewhere or use regex or some function.
                 id = extract_number_before_underscore(slice_filename)
                 data_info = lookup_num_in_datatable(id)
 
-                dataset.append(
-                    SingleDataPoint(relative_slice_path, relative_mask_path, data_info)
-                )
+                dataset.append(SingleDataPoint(relative_slice_path, data_info))
 
         return dataset
 
