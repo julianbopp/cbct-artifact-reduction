@@ -61,6 +61,7 @@ class InpaintingSliceDataset(Dataset):
             lakefs_loader (boto3client): The LakeFSLoader object used to load data from LakeFS.
             data_specification_path (str): The path to the data specification file.
             relative_slice_directory_path (str): The relative path to the remote/local directory containing the slices.
+            random_masks (bool): Whether to generate random masks or use the random generated masks with the hash of the file name.
         """
 
         super().__init__()
