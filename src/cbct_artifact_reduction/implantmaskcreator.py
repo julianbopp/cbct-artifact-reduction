@@ -102,9 +102,11 @@ class ImplantMaskCreator:
     def generate_mask_with_n_implants(self, n: int, random_state=None) -> np.ndarray:
         mask = np.zeros(self.resolution, dtype=int)
         for _ in range(n):
-            random_state = int.from_bytes(
-                hashlib.sha256(str(random_state).encode("utf-8")).digest()[:4], "little"
-            )
+            if random_state is not None:
+                random_state = int.from_bytes(
+                    hashlib.sha256(str(random_state).encode("utf-8")).digest()[:4],
+                    "little",
+                )
 
             implant = self.generate_mask(random_state=random_state)
             mask = mask + implant
