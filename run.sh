@@ -43,8 +43,8 @@ echo "--------------------"
 echo "DIFFUSION_FLAGS:"
 echo $DIFFUSION_FLAGS
 echo "--------------------"
-echo "TRAIN_FLAGS"
-echo $MODEL_FLAGS
+echo "TRAIN_FLAGS:"
+echo $TRAIN_FLAGS
 echo "--------------------"
 
 if [[ "$1" == "train" ]]; then
