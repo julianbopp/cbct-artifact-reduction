@@ -45,7 +45,6 @@ def main():
         client,
         os.path.join(cfg.ROOT_DIR, "training_data.csv"),
         "processed_data/frames/256x256",
-        "processed_data/masks/256x256",
         random_masks=args.random_masks,
     )
 
