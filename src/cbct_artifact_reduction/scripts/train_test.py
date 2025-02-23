@@ -48,7 +48,7 @@ def main():
         random_masks=args.random_masks,
     )
 
-    num_epochs = 10
+    num_epochs = args.num_epochs
     logger.log("training...")
     step = 0
     for epoch in range(num_epochs):
@@ -96,6 +96,7 @@ def create_argparser():
         use_fp16=False,
         fp16_scale_growth=1e-3,
         random_masks=True,
+        num_epochs=10000,
     )
     defaults.update(model_and_diffusion_defaults())
     parser = argparse.ArgumentParser()
