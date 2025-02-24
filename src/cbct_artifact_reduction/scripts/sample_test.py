@@ -36,7 +36,7 @@ def main():
     client = lakefs_own.CustomBoto3Client(f"{cfg.LAKEFS_DATA_REPOSITORY}")
     inpaintingSliceDataset = dataset.InpaintingSliceDataset(
         client,
-        os.path.join(cfg.ROOT_DIR, "training_data.csv"),
+        os.path.join(cfg.ROOT_DIR, args.data_csv),
         "processed_data/frames/256x256",
         random_masks=args.random_masks,
     )
@@ -104,6 +104,7 @@ def create_argparser():
         image_size=256,
         class_cond=False,
         random_masks=True,
+        data_csv="sample_data.csv",
     )
     defaults.update(model_and_diffusion_defaults())
     parser = argparse.ArgumentParser()
