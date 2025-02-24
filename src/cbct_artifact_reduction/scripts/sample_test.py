@@ -38,7 +38,7 @@ def main():
         client,
         os.path.join(cfg.ROOT_DIR, "training_data.csv"),
         "processed_data/frames/256x256",
-        "processed_data/masks/256x256",
+        random_masks=args.random_masks,
     )
 
     dataloader = DataLoader(
@@ -103,6 +103,7 @@ def create_argparser():
         num_ensemble=1,
         image_size=256,
         class_cond=False,
+        random_masks=True,
     )
     defaults.update(model_and_diffusion_defaults())
     parser = argparse.ArgumentParser()
