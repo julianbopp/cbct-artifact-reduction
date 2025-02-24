@@ -168,8 +168,13 @@ if __name__ == "__main__":
     args = input(
         "Type slice for csv with slice paths or mask for csv with slice+mask paths:"
     )
+    path = input(
+        "What name do you want to save the csv file as (default: training_data.csv)?:"
+    )
+    if path == "":
+        path = "training_data.csv"
 
     if args == "slice":
-        createSliceCSV(slice_paths, os.path.join(utils.ROOT_DIR, "training_data.csv"))
+        createSliceCSV(slice_paths, os.path.join(utils.ROOT_DIR, f"{path}"))
     elif args == "mask":
         print("Not implemented yet")
