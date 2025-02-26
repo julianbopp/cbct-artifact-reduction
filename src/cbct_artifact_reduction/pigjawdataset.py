@@ -54,6 +54,7 @@ class InpaintingSliceDataset(Dataset):
         data_specification_path: str,
         slice_directory_path: str,
         random_masks: bool = True,
+        return_info: bool = False,
     ) -> None:
         """Initializes the dataset.
 
@@ -62,6 +63,7 @@ class InpaintingSliceDataset(Dataset):
             data_specification_path (str): The path to the data specification file.
             relative_slice_directory_path (str): The relative path to the remote/local directory containing the slices.
             random_masks (bool): Whether to generate random masks or use the random generated masks with the hash of the file name.
+            return_info (bool): Whether to return the info of the slices or not.
         """
 
         super().__init__()
@@ -69,6 +71,7 @@ class InpaintingSliceDataset(Dataset):
         self.data_specification_path = data_specification_path
         self.relative_slice_directory_path = slice_directory_path
         self.random_masks = random_masks
+        self.return_info = return_info
 
         self.data_extension = ".nii.gz"
         self.dataset = self.prepare_dataset()
@@ -98,7 +101,9 @@ class InpaintingSliceDataset(Dataset):
 
         return dataset
 
-    def __getitem__(self, idx: int) -> tuple[np.ndarray, np.ndarray]:
+    def __getitem__(
+        self, idx: int
+    ) -> tuple[np.ndarray, np.ndarray] | tuple[np.ndarray, np.ndarray, dict]:
         """Downloads the idx-th slice and mask from LakeFS and returns them as numpy arrays.
 
         Uses cache if the files are already downloaded.
@@ -108,6 +113,8 @@ class InpaintingSliceDataset(Dataset):
 
         Returns:
             tuple[np.ndarray, np.ndarray]: A tuple containing the slice and mask at the given index.
+            OR
+            tuple[np.ndarray, np.ndarray, dict]: A tuple containing the slice, mask and item info at the given index.
         """
 
         assert 0 <= idx < self.__len__(), f"Index {idx} out of bounds"
@@ -147,7 +154,18 @@ class InpaintingSliceDataset(Dataset):
         else:
             processed_slice_np_array = self.dataprocessing(slice_np_array)
 
-        return processed_slice_np_array[np.newaxis, ...], mask_np_array[np.newaxis, ...]
+        if self.return_info:
+            if item_info is None:
+                item_info = {}
+            return (
+                processed_slice_np_array[np.newaxis, ...],
+                mask_np_array[np.newaxis, ...],
+                item_info,
+            )
+        else:
+            return processed_slice_np_array[np.newaxis, ...], mask_np_array[
+                np.newaxis, ...
+            ]
 
     def dataprocessing(
         self,
