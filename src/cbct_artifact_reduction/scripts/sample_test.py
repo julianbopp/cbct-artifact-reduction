@@ -39,6 +39,7 @@ def main():
         os.path.join(cfg.ROOT_DIR, args.data_csv),
         "processed_data/frames/256x256",
         random_masks=args.random_masks,
+        return_info=args.return_item_info,
     )
 
     dataloader = DataLoader(
@@ -105,6 +106,7 @@ def create_argparser():
         class_cond=False,
         random_masks=True,
         data_csv="sample_data.csv",
+        return_item_info=True,
     )
     defaults.update(model_and_diffusion_defaults())
     parser = argparse.ArgumentParser()
