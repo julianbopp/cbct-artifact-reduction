@@ -60,7 +60,7 @@ def main():
     model.eval()
 
     for i in range(num_samples):
-        ground_truth, mask = next(data)
+        ground_truth, mask, item_info = next(data)
         masked_image = ground_truth * (1 - mask)
 
         model_kwargs = {}
