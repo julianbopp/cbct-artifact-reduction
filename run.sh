@@ -54,14 +54,14 @@ echo "TRAIN_FLAGS:"
 if [[ "$1" == "train" ]]; then
     echo "Starting training"
     echo "Running $TRAIN_SCRIPT"
-    python "$TRAIN_SCRIPT" "$TRAIN_FLAGS" "$MODEL_FLAGS" "$DIFFUSION_FLAGS"
+    python $TRAIN_SCRIPT $TRAIN_FLAGS $MODEL_FLAGS $DIFFUSION_FLAGS
 elif [[ "$1" == "resume" ]]; then
     echo "Resume training"
     echo "Using model: $MODEL_PATH"
     echo "Running $TRAIN_SCRIPT"
-    python "$TRAIN_SCRIPT" --resume_checkpoint "$MODEL_PATH" "$TRAIN_FLAGS" "$MODEL_FLAGS" "$DIFFUSION_FLAGS"
+    python $TRAIN_SCRIPT --resume_checkpoint $MODEL_PATH $TRAIN_FLAGS $MODEL_FLAGS $DIFFUSION_FLAGS
 elif [[ "$1" == "sample" ]]; then
     echo "Starting sampling"
     echo "Running $SAMPLE_SCRIPT"
-    python "$SAMPLE_SCRIPT" --model_path "$MODEL_PATH" "$MODEL_FLAGS" "$DIFFUSION_FLAGS"
+    python $SAMPLE_SCRIPT --model_path $MODEL_PATH $MODEL_FLAGS $DIFFUSION_FLAGS
 fi
