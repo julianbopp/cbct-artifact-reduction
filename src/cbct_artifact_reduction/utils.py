@@ -1,7 +1,9 @@
 import os
 import random
 
+import numpy as np
 import pandas as pd
+import torch
 
 # Save project root directory
 ROOT_DIR = os.path.abspath(
@@ -13,7 +15,7 @@ OUTPUT_DIR = os.path.join(ROOT_DIR, "output")
 FRAME_DIR = os.path.join(ROOT_DIR, "output", "frames")
 
 
-def lookup_num_in_datatable(num: int):
+def lookup_num_in_datatable(lookup_id: int):
     """Looks up a row in the data.csv file and returns it as a dictionary.
 
     Args:
@@ -21,17 +23,23 @@ def lookup_num_in_datatable(num: int):
 
     Returns:
         dict: The row as a dictionary.
-
-    Throws:
-        KeyError: If the id is not found in the data.csv file.
     """
     df = pd.read_csv(os.path.join(ROOT_DIR, "data.csv"))
-    try:
-        match = df.loc[df["id"] == num]
-        return match.to_dict(orient="list")
-    except KeyError:
-        print(f"Could not find id {num} in data.csv")
+    row = df[df["id"] == lookup_id]
+    if row.empty:
         return None
+
+    row_dict = row.iloc[0].to_dict()
+
+    for key, value in row_dict.items():
+        if isinstance(value, torch.Tensor):
+            row_dict[key] = value.item()
+        elif isinstance(value, tuple) and len(value) == 1:
+            row_dict[key] = value[0]
+        elif isinstance(value, float) and np.isnan(value):
+            row_dict[key] = None
+
+    return row_dict
 
 
 def get_scanner_from_num(num: int):

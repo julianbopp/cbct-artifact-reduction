@@ -46,6 +46,7 @@ def create_sample_argparser():
         random_masks=True,
         data_csv="sample_data.csv",
         return_item_info=True,
+        lakefs_folder="processed_data/frames/256x256",
     )
     defaults.update(script_util.model_and_diffusion_defaults())  # type: ignore
     parser = argparse.ArgumentParser()

@@ -89,6 +89,8 @@ class InpaintingSliceDataset(Dataset):
             # TODO: Don't hardcode the id length. Specify it somewhere or use regex or some function.
             id = extract_number_before_underscore(slice_filename)
             data_info = lookup_num_in_datatable(id)
+            if data_info:
+                data_info.update({"filename": slice_filename})
 
             datapoint = {"slice_path": slice_path, "data_info": data_info}
 
