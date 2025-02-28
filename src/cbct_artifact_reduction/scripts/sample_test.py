@@ -38,7 +38,6 @@ def main():
         os.path.join(cfg.ROOT_DIR, args.data_csv),
         "processed_data/frames/256x256",
         random_masks=args.random_masks,
-        return_info=args.return_item_info,
     )
 
     dataloader = DataLoader(
