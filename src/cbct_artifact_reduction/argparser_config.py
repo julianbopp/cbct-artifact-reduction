@@ -6,6 +6,7 @@ import cbct_artifact_reduction.guided_diffusion.script_util as script_util
 def create_train_argparser():
     defaults = dict(
         data_dir="",
+        log_dir="~/logs/",
         schedule_sampler="uniform",
         lr=1e-4,
         weight_decay=0.0,
@@ -31,7 +32,7 @@ def create_train_argparser():
 def create_sample_argparser():
     defaults = dict(
         data_dir="",
-        log_dir="",
+        log_dir="~/samples/",
         # gt_dir="",
         adapted_samples="",
         sub_batch=16,
