@@ -1,4 +1,3 @@
-import argparse
 import os
 from datetime import datetime
 
@@ -7,9 +6,9 @@ import cbct_artifact_reduction.pigjawdataset as dataset
 import nibabel as nib
 import torch
 from cbct_artifact_reduction import lakefs_own
+from cbct_artifact_reduction.argparser_config import create_sample_argparser
 from cbct_artifact_reduction.guided_diffusion import dist_util, logger
 from cbct_artifact_reduction.guided_diffusion.script_util import (
-    add_dict_to_argparser,
     args_to_dict,
     create_model_and_diffusion,
     model_and_diffusion_defaults,
@@ -18,7 +17,7 @@ from torch.utils.data import DataLoader
 
 
 def main():
-    args = create_argparser().parse_args()
+    args = create_sample_argparser().parse_args()
     dist_util.setup_dist()
     logger.configure(os.path.expanduser("~/logs/"))
 
@@ -60,7 +59,7 @@ def main():
     model.eval()
 
     for i in range(num_samples):
-        ground_truth, mask = next(data)
+        ground_truth, mask, item_info = next(data)
         masked_image = ground_truth * (1 - mask)
 
         model_kwargs = {}
@@ -87,31 +86,6 @@ def main():
             print(f"Saved sample {i}")
 
     pass
-
-
-def create_argparser():
-    defaults = dict(
-        data_dir="",
-        log_dir="",
-        # gt_dir="",
-        adapted_samples="",
-        sub_batch=16,
-        clip_denoised=True,
-        num_samples=1,
-        batch_size=1,
-        use_ddim=False,
-        model_path="",
-        num_ensemble=1,
-        image_size=256,
-        class_cond=False,
-        random_masks=True,
-        data_csv="sample_data.csv",
-        return_item_info=True,
-    )
-    defaults.update(model_and_diffusion_defaults())
-    parser = argparse.ArgumentParser()
-    add_dict_to_argparser(parser, defaults)
-    return parser
 
 
 if __name__ == "__main__":

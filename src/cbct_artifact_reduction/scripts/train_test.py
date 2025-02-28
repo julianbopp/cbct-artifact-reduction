@@ -1,16 +1,15 @@
-import argparse
 import os
 from datetime import datetime
 
 import cbct_artifact_reduction.config as cfg
 import cbct_artifact_reduction.lakefs_own as lakefs_own
 import cbct_artifact_reduction.pigjawdataset as dataset
+from cbct_artifact_reduction.argparser_config import create_train_argparser
 from cbct_artifact_reduction.guided_diffusion import dist_util, logger
 from cbct_artifact_reduction.guided_diffusion.resample import (
     create_named_schedule_sampler,
 )
 from cbct_artifact_reduction.guided_diffusion.script_util import (
-    add_dict_to_argparser,
     args_to_dict,
     create_model_and_diffusion,
     model_and_diffusion_defaults,
@@ -20,7 +19,7 @@ from torch.utils.data import DataLoader
 
 
 def main():
-    args = create_argparser().parse_args()
+    args = create_train_argparser().parse_args()
     dist_util.setup_dist()
     logger.configure(os.path.expanduser("~/logs/"))
 
@@ -78,31 +77,6 @@ def main():
         ).run_loop()
         # Make sure to not resume checkpoint again after first epoch:
         args.resume_checkpoint = ""
-
-
-def create_argparser():
-    defaults = dict(
-        data_dir="",
-        schedule_sampler="uniform",
-        lr=1e-4,
-        weight_decay=0.0,
-        lr_anneal_steps=0,
-        batch_size=1,
-        microbatch=-1,  # -1 disables microbatches
-        ema_rate="0.9999",  # comma-separated list of EMA values
-        log_interval=1000,
-        save_interval=5000,
-        resume_checkpoint="",
-        use_fp16=False,
-        fp16_scale_growth=1e-3,
-        random_masks=True,
-        num_epochs=10000,
-        data_csv="training_data.csv",
-    )
-    defaults.update(model_and_diffusion_defaults())
-    parser = argparse.ArgumentParser()
-    add_dict_to_argparser(parser, defaults)
-    return parser
 
 
 if __name__ == "__main__":
