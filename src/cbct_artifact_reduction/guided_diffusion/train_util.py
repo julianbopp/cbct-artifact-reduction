@@ -157,7 +157,8 @@ class TrainLoop:
             or self.step + self.resume_step < self.lr_anneal_steps
         ):
             try:
-                batch, cond = next(self.data)
+                data = next(self.data)
+                batch, cond = data["slice"], data["mask"]
             except StopIteration:
                 print("Epoch done")
                 return self.step
