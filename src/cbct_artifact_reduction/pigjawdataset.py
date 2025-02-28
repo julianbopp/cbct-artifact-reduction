@@ -1,6 +1,7 @@
 import hashlib
 import os
 import re
+from typing import Any
 
 import numpy as np
 from torch.utils.data.dataset import Dataset
@@ -25,24 +26,6 @@ def extract_number_before_underscore(input_string):
         raise ValueError("Input string does not match the expected format.")
 
 
-class SingleDataPoint:
-    """Collection of path information of a single data point.
-
-    Attributes:
-        slice_path (str): The path to the slice
-    """
-
-    def __init__(self, relative_slice_path: str, data_info: dict | None):
-        """Initializes a SingleDataPoint object.
-
-        Args:
-            relative_slice_path (str): The path to the slice.
-            data_info (dict): Information about the data.
-        """
-        self.relative_slice_path = relative_slice_path
-        self.data_info = data_info
-
-
 class InpaintingSliceDataset(Dataset):
     """A dataset containing slices of CBCT scans and binary masks to train a model for inpainting.
 
@@ -51,7 +34,7 @@ class InpaintingSliceDataset(Dataset):
     def __init__(
         self,
         lakefs_loader: CustomBoto3Client,
-        data_specification_path: str,
+        filenames: list[str],
         slice_directory_path: str,
         random_masks: bool = True,
         return_info: bool = False,
@@ -60,7 +43,7 @@ class InpaintingSliceDataset(Dataset):
 
         Args:
             lakefs_loader (boto3client): The LakeFSLoader object used to load data from LakeFS.
-            data_specification_path (str): The path to the data specification file.
+            filenames list[str]: The list of filenames to load.
             relative_slice_directory_path (str): The relative path to the remote/local directory containing the slices.
             random_masks (bool): Whether to generate random masks or use the random generated masks with the hash of the file name.
             return_info (bool): Whether to return the info of the slices or not.
@@ -68,7 +51,7 @@ class InpaintingSliceDataset(Dataset):
 
         super().__init__()
         self.lakefs_loader = lakefs_loader
-        self.data_specification_path = data_specification_path
+        self.filenames = filenames
         self.relative_slice_directory_path = slice_directory_path
         self.random_masks = random_masks
         self.return_info = return_info
@@ -78,94 +61,96 @@ class InpaintingSliceDataset(Dataset):
         # TODO: Don't hardcode the resolution
         self.mask_creator = imc.ImplantMaskCreator((256, 256))
 
-    def prepare_dataset(self) -> list[SingleDataPoint]:
-        """Create a list of SingleDataPoint objects containing the slices and masks that are specified in data_specification_path.
+    def prepare_dataset(self) -> list[dict[str, Any]]:
+        """Create a list of data points, each containing the path to the slice and information about the data to which the slice belongs.
 
         Returns:
-            list[SingleDataPoint]: A list of SingleDataPoint objects containing the filepaths of the slices and masks.
+            list[dict]: A list of dictionaries containing slice_path and data_info.
         """
         dataset = []
-        with open(self.data_specification_path, "r") as f:
-            next(f, None)  # Skip the header row
-            for line in f:
-                slice_filename = line.strip()
+        for filename in self.filenames:
+            slice_filename = filename.strip()
 
-                relative_slice_path = os.path.join(
-                    self.relative_slice_directory_path, slice_filename
-                )
-                # TODO: Don't hardcode the id length. Specify it somewhere or use regex or some function.
-                id = extract_number_before_underscore(slice_filename)
-                data_info = lookup_num_in_datatable(id)
+            slice_path = os.path.join(
+                self.relative_slice_directory_path, slice_filename
+            )
+            # TODO: Don't hardcode the id length. Specify it somewhere or use regex or some function.
+            id = extract_number_before_underscore(slice_filename)
+            data_info = lookup_num_in_datatable(id)
 
-                dataset.append(SingleDataPoint(relative_slice_path, data_info))
+            datapoint = {"slice_path": slice_path, "data_info": data_info}
+
+            dataset.append(datapoint)
 
         return dataset
 
-    def __getitem__(
-        self, idx: int
-    ) -> tuple[np.ndarray, np.ndarray] | tuple[np.ndarray, np.ndarray, dict]:
-        """Downloads the idx-th slice and mask from LakeFS and returns them as numpy arrays.
-
-        Uses cache if the files are already downloaded.
+    def get_mask(self, local_slice_path: str) -> np.ndarray:
+        """Create a random or deterministic mask for the given slice.
+        Use self.random_masks to determine whether to create a random mask
+        or a deterministic one based on the hash of the slice filename.
 
         Args:
-            idx (int): The index of the slice and mask to return.
+            local_slice_path (str): The path to the slice on the local filesystem.
 
         Returns:
-            tuple[np.ndarray, np.ndarray]: A tuple containing the slice and mask at the given index.
-            OR
-            tuple[np.ndarray, np.ndarray, dict]: A tuple containing the slice, mask and item info at the given index.
+            np.ndarray: The mask for the given slice.
         """
-
-        assert 0 <= idx < self.__len__(), f"Index {idx} out of bounds"
-
-        item = self.dataset[idx]
-        item_info = item.data_info
-
-        slice_path = self.lakefs_loader.get_file(item.relative_slice_path)
-
-        assert slice_path is not None, (
-            f"File {item.relative_slice_path} not found on lakeFS"
-        )
 
         if self.random_masks:
             slice_hash = None
         else:
             slice_hash = int.from_bytes(
-                hashlib.sha256(slice_path.encode("utf-8")).digest()[:4], "little"
+                hashlib.sha256(local_slice_path.encode("utf-8")).digest()[:4], "little"
             )
 
-        slice_np_array = single_nifti_to_numpy(slice_path)
-        # TODO: Don't hardcode the amount of implants. Specify it somewhere.
         mask_np_array = self.mask_creator.generate_mask_with_random_amount_of_implants(
             1, 4, random_state=slice_hash
         )
 
-        if item_info is not None:
-            try:
-                scanner = item_info["scanner"][0]
-                fov = item_info["fov"][0]
-                processed_slice_np_array = self.dataprocessing(
-                    slice_np_array, scanner, fov
-                )
-            except KeyError:
-                print(f"No scanner information for item at slice_path: {slice_path}")
-                processed_slice_np_array = self.dataprocessing(slice_np_array)
-        else:
-            processed_slice_np_array = self.dataprocessing(slice_np_array)
+        return mask_np_array
 
-        if self.return_info:
-            if item_info is None:
-                item_info = {}
-            return (
-                processed_slice_np_array[np.newaxis, ...],
-                mask_np_array[np.newaxis, ...],
-                item_info,
-            )
-        else:
-            return processed_slice_np_array[np.newaxis, ...], mask_np_array[
-                np.newaxis, ...
-            ]
+    def __getitem__(self, idx: int) -> dict[str, Any]:
+        """Downloads the idx-th slice and from LakeFS and creates a mask for it.
+        Optionally, it can also return the data_info, if set in the class constructor.
+        Uses cache if the files are already downloaded.
+
+        Args:
+            idx (int): The index of the slice to return.
+
+        Returns:
+            dict[str, Any]: A dictionary containing the following keys:
+                - slice (np.ndarray): containing the slice.
+                - mask (np.ndarray): containing the mask.
+                - info (optional): dict containing the data_info.
+        """
+
+        assert 0 <= idx < self.__len__(), f"Index {idx} out of bounds"
+
+        datapoint = self.dataset[idx]
+
+        item_path = datapoint["slice_path"]
+        item_info = datapoint["data_info"]
+
+        # Download the slice from lakeFS. If it is not found this will be None.
+        local_slice_path = self.lakefs_loader.get_file(item_path)
+
+        if local_slice_path is None:
+            print(f"File {item_path} not found on lakeFS. Deleting item from dataset.")
+            self.dataset.pop(idx)
+            return self.__getitem__(idx)
+
+        slice_np_array = single_nifti_to_numpy(local_slice_path)
+        mask_np_array = self.get_mask(local_slice_path)
+
+        processed_slice_np_array = self.dataprocessing(slice_np_array)
+
+        item = {
+            "slice": processed_slice_np_array[np.newaxis, ...],
+            "mask": mask_np_array[np.newaxis, ...],
+            "info": item_info,
+        }
+
+        return item
 
     def dataprocessing(
         self,
