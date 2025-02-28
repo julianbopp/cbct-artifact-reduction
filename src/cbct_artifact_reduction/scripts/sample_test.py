@@ -83,7 +83,8 @@ def main():
                 sample_nifti_object, os.path.join(SAMPLE_DIR, f"sample_{i}.nii.gz")
             )
 
-            print(f"Saved sample {i}")
+            logger.log(f"Saved sample {i}")
+            logger.log(item["info"])
 
     pass
 
