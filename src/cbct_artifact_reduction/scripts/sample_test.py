@@ -70,7 +70,7 @@ def main():
             model,
             masked_image,
             mask,
-            clip_denoised=True,
+            clip_denoised=args.clip_denoised,
             model_kwargs=model_kwargs,
         )
         if sample is not None:
