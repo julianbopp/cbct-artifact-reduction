@@ -48,7 +48,6 @@ class InpaintingSliceDataset(Dataset):
         filenames: str | list[str],
         slice_directory_path: str,
         random_masks: bool = True,
-        return_info: bool = False,
     ) -> None:
         """Initializes the dataset.
 
@@ -57,7 +56,6 @@ class InpaintingSliceDataset(Dataset):
             filenames list[str]: The list of filenames to load. Can be a path to a csv file or a list of filenames.
             relative_slice_directory_path (str): The relative path to the remote/local directory containing the slices.
             random_masks (bool): Whether to generate random masks or use the random generated masks with the hash of the file name.
-            return_info (bool): Whether to return the info of the slices or not.
         """
 
         super().__init__()
@@ -65,7 +63,6 @@ class InpaintingSliceDataset(Dataset):
         self.filenames = filenames
         self.relative_slice_directory_path = slice_directory_path
         self.random_masks = random_masks
-        self.return_info = return_info
 
         self.data_extension = ".nii.gz"
         self.dataset = self.prepare_dataset()
