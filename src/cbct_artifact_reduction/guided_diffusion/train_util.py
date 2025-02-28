@@ -256,9 +256,9 @@ class TrainLoop:
             if dist.get_rank() == 0:
                 logger.log(f"saving model {rate}...")
                 if not rate:
-                    filename = f"model{(self.step+self.resume_step):06d}.pt"
+                    filename = f"model{(self.step + self.resume_step):06d}.pt"
                 else:
-                    filename = f"ema_{rate}_{(self.step+self.resume_step):06d}.pt"
+                    filename = f"ema_{rate}_{(self.step + self.resume_step):06d}.pt"
                 with bf.BlobFile(bf.join(get_blob_logdir(), filename), "wb") as f:
                     th.save(state_dict, f)
 
@@ -268,7 +268,9 @@ class TrainLoop:
 
         if dist.get_rank() == 0:
             with bf.BlobFile(
-                bf.join(get_blob_logdir(), f"opt{(self.step+self.resume_step):06d}.pt"),
+                bf.join(
+                    get_blob_logdir(), f"opt{(self.step + self.resume_step):06d}.pt"
+                ),
                 "wb",
             ) as f:
                 th.save(self.opt.state_dict(), f)
