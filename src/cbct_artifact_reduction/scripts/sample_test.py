@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader
 def main():
     args = create_sample_argparser().parse_args()
     dist_util.setup_dist()
-    logger.configure(os.path.expanduser("~/logs/"))
+    logger.configure(os.path.expanduser(args.log_dir))
 
     SAMPLE_DIR = os.path.join(os.path.expanduser("~/"), "samples")
 
