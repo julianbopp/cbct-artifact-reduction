@@ -124,9 +124,9 @@ class InpaintingSliceDataset(Dataset):
 
         slice_path = self.lakefs_loader.get_file(item.relative_slice_path)
 
-        assert slice_path is not None, (
-            f"File {item.relative_slice_path} not found on lakeFS"
-        )
+        assert (
+            slice_path is not None
+        ), f"File {item.relative_slice_path} not found on lakeFS"
 
         if self.random_masks:
             slice_hash = None
