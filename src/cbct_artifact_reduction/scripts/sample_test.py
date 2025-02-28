@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader
 def main():
     args = create_sample_argparser().parse_args()
     dist_util.setup_dist()
-    logger.configure(os.path.expanduser("~/logs/"))
+    logger.configure(os.path.expanduser(args.log_dir))
 
     SAMPLE_DIR = os.path.join(os.path.expanduser("~/"), "samples")
 
@@ -38,7 +38,6 @@ def main():
         os.path.join(cfg.ROOT_DIR, args.data_csv),
         "processed_data/frames/256x256",
         random_masks=args.random_masks,
-        return_info=args.return_item_info,
     )
 
     dataloader = DataLoader(
@@ -59,7 +58,8 @@ def main():
     model.eval()
 
     for i in range(num_samples):
-        ground_truth, mask, item_info = next(data)
+        item = next(data)
+        ground_truth, mask = item["slice"], item["mask"]
         masked_image = ground_truth * (1 - mask)
 
         model_kwargs = {}
@@ -70,7 +70,7 @@ def main():
             model,
             masked_image,
             mask,
-            clip_denoised=True,
+            clip_denoised=args.clip_denoised,
             model_kwargs=model_kwargs,
         )
         if sample is not None:

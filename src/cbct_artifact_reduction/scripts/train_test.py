@@ -21,7 +21,7 @@ from torch.utils.data import DataLoader
 def main():
     args = create_train_argparser().parse_args()
     dist_util.setup_dist()
-    logger.configure(os.path.expanduser("~/logs/"))
+    logger.configure(os.path.expanduser(args.log_dir))
 
     today = datetime.now()
     logger.log(f"TRAINING {today}")
