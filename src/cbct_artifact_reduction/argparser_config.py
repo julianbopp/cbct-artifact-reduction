@@ -58,6 +58,29 @@ def create_sample_argparser():
         data_csv="sample_data.csv",
         return_item_info=True,
         lakefs_folder="processed_data/frames/256x256",
+        schedule_sampler="uniform",
+        lr=1e-4,
+        weight_decay=0.0,
+        lr_anneal_steps=0,
+        microbatch=-1,  # -1 disables microbatches
+        ema_rate="0.9999",  # comma-separated list of EMA values
+        log_interval=1000,
+        save_interval=5000,
+        resume_checkpoint="",
+        use_fp16=False,
+        fp16_scale_growth=1e-3,
+        num_epochs=10000,
+        num_channels=128,
+        class_cond=False,
+        num_res_blocks=2,
+        num_heads=1,
+        learn_sigma=True,
+        use_scale_shift_norm=False,
+        attention_resolutions=16,
+        diffusion_steps=1000,
+        noise_schedule="linear",
+        rescale_learned_sigmas=False,
+        rescale_timesteps=False,
     )
     defaults.update(script_util.model_and_diffusion_defaults())  # type: ignore
     parser = argparse.ArgumentParser()
