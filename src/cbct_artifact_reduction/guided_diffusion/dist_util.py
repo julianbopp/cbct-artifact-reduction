@@ -38,7 +38,8 @@ def get_free_gpu():
     return idx
 
 
-free_gpu_id = get_free_gpu()
+if th.cuda.is_available():
+    free_gpu_id = get_free_gpu()
 
 
 def setup_dist():
