@@ -21,6 +21,17 @@ def create_train_argparser():
         fp16_scale_growth=1e-3,
         random_masks=True,
         num_epochs=10000,
+        num_channels=128,
+        class_cond=False,
+        num_res_blocks=2,
+        num_heads=1,
+        learn_sigma=True,
+        use_scale_shift_norm=False,
+        attention_resolutions=16,
+        diffusion_steps=1000,
+        noise_schedule="linear",
+        rescale_learned_sigmas=False,
+        rescale_timesteps=False,
         data_csv="training_data.csv",
     )
     defaults.update(script_util.model_and_diffusion_defaults())
