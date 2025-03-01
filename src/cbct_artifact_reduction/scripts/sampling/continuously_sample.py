@@ -133,7 +133,7 @@ def sample_model(checkpoint_path):
 
 
 class CheckpointHandler(FileSystemEventHandler):
-    def on_created(self, event):
+    def on_modified(self, event):
         if isinstance(event.src_path, str):
             if event.src_path.endswith(".pt") and "opt" not in event.src_path:
                 # src_path is a path to a modelXXXXX.pt or ema_X.XXXX_XXXX.pt file
