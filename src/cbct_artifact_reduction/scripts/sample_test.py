@@ -86,7 +86,7 @@ def main():
             )
 
             logger.log(f"Saved sample {i}")
-            logger.log(item["info"])
+            logger.log(info)
 
     pass
 
