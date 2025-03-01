@@ -10,7 +10,7 @@ from cbct_artifact_reduction.csvcreator import (
     get_random_entries_by_scanner_fov_mandible,
     get_random_slice_from_id,
 )
-from cbct_artifact_reduction.guided_diffusion import logger
+from cbct_artifact_reduction.guided_diffusion import dist_util, logger
 from cbct_artifact_reduction.guided_diffusion.script_util import (
     args_to_dict,
     create_model_and_diffusion,
@@ -70,11 +70,15 @@ def sample_model(checkpoint_path):
             **args_to_dict(args, model_and_diffusion_defaults().keys())
         )
         try:
-            model.load_state_dict(torch.load(checkpoint_path, map_location=DEVICE))
+            model.load_state_dict(
+                dist_util.load_state_dict(checkpoint_path, map_location=DEVICE)
+            )
         except:
             logger.error("Could not load model. Trying to load again on CPU.")
             model.load_state_dict(
-                torch.load(checkpoint_path, map_location=torch.device("cpu"))
+                dist_util.load_state_dict(
+                    checkpoint_path, map_location=torch.device("cpu")
+                )
             )
         model.eval()
         logger.info("Model loaded")
