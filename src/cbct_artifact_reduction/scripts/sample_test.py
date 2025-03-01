@@ -59,7 +59,9 @@ def main():
 
     for i in range(num_samples):
         item = next(data)
-        ground_truth, mask = item["slice"], item["mask"]
+        ground_truth, mask, info = item["slice"], item["mask"], item["info"]
+        if args.batch_size == 1:
+            info = dataset.clean_dict(info)
         masked_image = ground_truth * (1 - mask)
 
         model_kwargs = {}
