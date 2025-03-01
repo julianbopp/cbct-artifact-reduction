@@ -1,107 +1,164 @@
 import csv
 import os
+import random
 
 import pandas as pd
 
 from cbct_artifact_reduction import utils
 
 
-def filter_data(csv_path):
-    # Load the data
-    df = pd.read_csv(csv_path)
+def get_random_slice_from_id(file_path, ids):
+    """
+    Generates a list of slice filenames in the format 'id_randomFrameNumber.nii.gz'.
 
-    # Get unique values for filtering
-    scanners = df["scanner"].unique().tolist()
-    fovs = df["fov"].unique().tolist()
-    materials = df["material"].dropna().unique().tolist()
-    mandibles = df["mandible"].unique().tolist()
-    implants = df["implants"].unique().tolist()
-    radiations = df["radiation"].dropna().unique().tolist()
+    :param file_path: Path to the CSV file containing 'id' and 'frames' columns.
+    :param ids: List of IDs to generate slice filenames for.
+    :return: List of filenames in the format 'id_randomFrameNumber.nii.gz'.
+    """
+    df = pd.read_csv(file_path)
+    id_to_frames = df.set_index("id")[
+        "frames"
+    ].to_dict()  # Create a lookup for frames per ID
 
-    # User input for scanner selection
-    print("Available scanner types:", scanners)
-    selected_scanners = input(
-        "Enter scanner types to include (comma-separated, leave empty for all): "
-    ).split(",")
-    selected_scanners = [s.strip() for s in selected_scanners if s.strip()] or scanners
+    slices = [f"{id}_{random.randint(0, id_to_frames.get(id, 0))}.nii.gz" for id in ids]
 
-    # User input for FOV selection
-    print("Available FOVs:", fovs)
-    selected_fovs = input(
-        "Enter FOVs to include (comma-separated, leave empty for all): "
-    ).split(",")
-    selected_fovs = [f.strip() for f in selected_fovs if f.strip()] or fovs
+    return slices
 
-    # User input for material selection
-    print("Available materials:", materials)
-    selected_materials = input(
-        "Enter materials to include (comma-separated, leave empty for all, type 'exclude_missing' to exclude missing values): "
-    ).split(",")
-    selected_materials = [
-        m.strip() for m in selected_materials if m.strip() and m != "exclude_missing"
-    ] or materials
-    include_missing_materials = "exclude_missing" not in selected_materials
 
-    # User input for mandible selection
-    print("Available mandible values:", mandibles)
-    selected_mandibles = input(
-        "Enter mandible values to include (comma-separated, leave empty for all): "
-    ).split(",")
-    selected_mandibles = [
-        int(m.strip()) for m in selected_mandibles if m.strip().isdigit()
-    ] or mandibles
+def filter_csv(file_path, output_path=None, exclude_filled_radiation=False, **filters):
+    """
+    Filters a CSV file based on given column conditions. Allows multiple values per filter key,
+    including passing comma-separated strings. Optionally excludes rows with values in the 'radiation' column.
 
-    # User input for implants selection
-    print("Available implant counts:", implants)
-    selected_implants = input(
-        "Enter implant counts to include (comma-separated, leave empty for all): "
-    ).split(",")
-    selected_implants = [
-        int(i.strip()) for i in selected_implants if i.strip().isdigit()
-    ] or implants
+    :param file_path: Path to the CSV file.
+    :param output_path: (Optional) Path to save the filtered CSV.
+    :param exclude_filled_radiation: If True, removes rows where 'radiation' has a value.
+    :param filters: Column-value pairs to filter data (e.g., scanner="axeos,planmeca", material="ti").
+    :return: Filtered DataFrame with the same data types as the original.
+    """
+    df = pd.read_csv(file_path)
+    original_dtypes = df.dtypes  # Store original data types
 
-    # User input for radiation selection
-    print("Available radiation values:", radiations)
-    selected_radiations = input(
-        "Enter radiation values to include (comma-separated, leave empty for all, type 'exclude_missing' to exclude missing values): "
-    ).split(",")
-    selected_radiations = [
-        r.strip() for r in selected_radiations if r.strip() and r != "exclude_missing"
-    ] or radiations
-    include_missing_radiations = "exclude_missing" not in selected_radiations
+    # Convert all filter values to string for consistency
+    for column in filters:
+        if isinstance(filters[column], str) and "," in filters[column]:
+            filters[column] = filters[column].split(",")
 
     # Apply filters
-    filtered_df = df[
-        df["scanner"].isin(selected_scanners)
-        & df["fov"].isin(selected_fovs)
-        & df["mandible"].isin(selected_mandibles)
-        & df["implants"].isin(selected_implants)
-    ]
+    for column, value in filters.items():
+        if column in df.columns:
+            if isinstance(value, list):  # Allow multiple values per filter key
+                df = df[df[column].astype(str).isin(value)]
+            else:
+                df = df[df[column].astype(str) == str(value)]
 
-    if include_missing_materials:
-        filtered_df = filtered_df[
-            filtered_df["material"].isin(selected_materials)
-            | filtered_df["material"].isna()
-        ]
-    else:
-        filtered_df = filtered_df[
-            filtered_df["material"].isin(selected_materials)
-            & filtered_df["material"].notna()
-        ]
+    # Exclude rows where 'radiation' has a value
+    if exclude_filled_radiation and "radiation" in df.columns:
+        df = df[df["radiation"].isna()]
 
-    if include_missing_radiations:
-        filtered_df = filtered_df[
-            filtered_df["radiation"].isin(selected_radiations)
-            | filtered_df["radiation"].isna()
-        ]
-    else:
-        filtered_df = filtered_df[
-            filtered_df["radiation"].isin(selected_radiations)
-            & filtered_df["radiation"].notna()
-        ]
+    # Restore original data types
+    df = df.astype(original_dtypes)
 
-    # Save filtered IDs to a new CSV file
-    return filtered_df["id"].tolist()
+    # Save if output path is provided
+    if output_path:
+        df.to_csv(output_path, index=False)
+
+    return df
+
+
+def get_random_entries(file_path, n, exclude_filled_radiation=False, **filters):
+    """
+    Returns n random entries from the filtered CSV data.
+
+    :param file_path: Path to the CSV file.
+    :param n: Number of random entries to return.
+    :param exclude_filled_radiation: If True, removes rows where 'radiation' has a value.
+    :param filters: Column-value pairs to filter data before sampling.
+    :return: Sampled DataFrame with the same data types as the original.
+    """
+    filtered_df = filter_csv(
+        file_path, exclude_filled_radiation=exclude_filled_radiation, **filters
+    )
+    return filtered_df.sample(
+        n=min(n, len(filtered_df)), random_state=None
+    )  # Ensuring reproducibility
+
+
+def get_random_entries_by_scanner_fov_mandible(
+    file_path, n, exclude_filled_radiation=True, exclude_mandibles=None
+):
+    """
+    Returns n random entries for each combination of scanner, fov, and mandible,
+    with options to exclude specific mandibles and remove rows with filled radiation values.
+
+    :param file_path: Path to the CSV file.
+    :param n: Number of random entries to return per scanner, fov, and mandible combination.
+    :param exclude_filled_radiation: If True, removes rows where 'radiation' has a value.
+    :param exclude_mandibles: List of mandible values to exclude.
+    :return: Sampled DataFrame with entries from each scanner, fov, and mandible group.
+    """
+    df = pd.read_csv(file_path)
+    original_dtypes = df.dtypes  # Store original data types
+
+    if not {"scanner", "fov", "mandible"}.issubset(df.columns):
+        raise ValueError(
+            "Columns 'scanner', 'fov', and 'mandible' must be present in the dataset."
+        )
+
+    # Exclude rows where 'radiation' has a value
+    if exclude_filled_radiation and "radiation" in df.columns:
+        df = df[df["radiation"].isna()]
+
+    # Exclude specific mandible values
+    if exclude_mandibles:
+        df = df[~df["mandible"].astype(str).isin(map(str, exclude_mandibles))]
+
+    sampled_df = df.groupby(["scanner", "fov", "mandible"], group_keys=False).apply(
+        lambda x: x.sample(n=min(n, len(x)), random_state=42)
+    )
+
+    # Restore original data types
+    sampled_df = sampled_df.astype(original_dtypes)
+
+    return sampled_df
+
+
+def filter_with_user_input(file_path):
+    """
+    Asks the user for input to filter the CSV file interactively and prints available options.
+
+    :param file_path: Path to the CSV file.
+    :return: Filtered DataFrame with the same data types as the original.
+    """
+    df = pd.read_csv(file_path)
+    print("Available columns:", list(df.columns))
+    filters = {}
+
+    while True:
+        column = input(
+            "Enter column name to filter by (or press Enter to stop): "
+        ).strip()
+        if not column:
+            break
+        if column not in df.columns:
+            print(f"Column '{column}' does not exist. Try again.")
+            continue
+
+        unique_values = df[column].dropna().unique()
+        print(f"Available options for '{column}': {', '.join(map(str, unique_values))}")
+        value = input(
+            f"Enter values for '{column}' (comma-separated for multiple values): "
+        ).strip()
+        filters[column] = value
+
+    exclude_filled_radiation = (
+        input("Exclude rows with filled radiation values? (yes/no): ").strip().lower()
+        == "yes"
+    )
+
+    return filter_csv(
+        file_path, exclude_filled_radiation=exclude_filled_radiation, **filters
+    )
 
 
 def get_slices_from_ids(csv_path: str, ids: list[str]):
@@ -163,7 +220,8 @@ def createSliceMaskCSV(slices: list[str], masks: list[str], csv_output_path: str
 
 if __name__ == "__main__":
     csv_path = os.path.join(utils.ROOT_DIR, "data.csv")
-    ids = filter_data(csv_path)
+    ids = filter_with_user_input(csv_path).id.tolist()
+    print(ids)
     slice_paths = get_slices_from_ids(csv_path, ids)
     args = input(
         "Type slice for csv with slice paths or mask for csv with slice+mask paths:"

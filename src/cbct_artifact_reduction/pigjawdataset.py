@@ -6,9 +6,12 @@ from typing import Any
 
 import numpy as np
 import torch
+from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 
+import cbct_artifact_reduction.config as cfg
 import cbct_artifact_reduction.implantmaskcreator as imc
+from cbct_artifact_reduction import lakefs_own
 from cbct_artifact_reduction.dataprocessing import (
     min_max_normalize,
     remove_outliers,
@@ -254,3 +257,18 @@ class InpaintingSliceDataset(Dataset):
 
     def __len__(self) -> int:
         return len(self.dataset)
+
+
+if __name__ == "__main__":
+    client = lakefs_own.CustomBoto3Client(f"{cfg.LAKEFS_DATA_REPOSITORY}")
+    inpaintingSliceDataset = InpaintingSliceDataset(
+        client,
+        os.path.join(cfg.ROOT_DIR, "training_data.csv"),
+        "processed_data/frames/256x256",
+        random_masks=True,
+    )
+
+    dataloader = DataLoader(inpaintingSliceDataset, batch_size=1, shuffle=True)
+
+    data = iter(dataloader)
+    print(next(data))
