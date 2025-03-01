@@ -5,6 +5,7 @@ import re
 from typing import Any
 
 import numpy as np
+import torch
 from torch.utils.data.dataset import Dataset
 
 import cbct_artifact_reduction.implantmaskcreator as imc
