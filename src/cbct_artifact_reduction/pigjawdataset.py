@@ -17,6 +17,56 @@ from cbct_artifact_reduction.lakefs_own import CustomBoto3Client
 from cbct_artifact_reduction.utils import lookup_num_in_datatable
 
 
+def clean_dict(data):
+    """Extract single-element lists, tensor values, and convert NaN values to None.
+
+    Args:
+        data (dict): A dictionary with with single-element lists, tensor values, and NaN values.
+
+    Returns:
+        dict: A new cleaned dictionary.
+    """
+    cleaned_data = {}
+    for key, value in data.items():
+        # Extract single-element lists
+        if isinstance(value, list) and len(value) == 1:
+            value = value[0]
+
+        # Extract tensor values and convert to Python types
+        if isinstance(value, torch.Tensor):
+            value = value.item()  # Extract single value from tensor
+
+        # Convert NaN values to None
+        if isinstance(value, tuple) and len(value) == 1:
+            value = value[0]  # Extract from tuple
+        if isinstance(value, float) and np.isnan(value):
+            value = None  # Replace NaN with None
+
+        cleaned_data[key] = value
+
+    return cleaned_data
+
+
+def replace_none_with_default(dictionary, default_value):
+    """Recursively replaces None values in a dictionary with a default value.
+
+    Args:
+        dictionary (dict): A dictionary with None values to be replaced.
+        default_value (Any): The value to replace None with.
+
+    Returns:
+        dict: A new dictionary with replaced None values.
+    """
+    if isinstance(dictionary, dict):
+        return {
+            k: replace_none_with_default(v, default_value)
+            for k, v in dictionary.items()
+        }
+    elif dictionary is None:
+        return default_value
+    return dictionary
+
+
 def get_filenames_from_csv(csv_path):
     filenames = []
     with open(csv_path, "r") as csv_file:
@@ -158,6 +208,7 @@ class InpaintingSliceDataset(Dataset):
 
         processed_slice_np_array = self.dataprocessing(slice_np_array)
 
+        item_info = replace_none_with_default(item_info, default_value="")
         item = {
             "slice": processed_slice_np_array[np.newaxis, ...],
             "mask": mask_np_array[np.newaxis, ...],
