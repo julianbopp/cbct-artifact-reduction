@@ -1,6 +1,7 @@
 import csv
 import hashlib
 import os
+import random
 import re
 from typing import Any
 
@@ -209,6 +210,11 @@ class InpaintingSliceDataset(Dataset):
 
         slice_np_array = single_nifti_to_numpy(local_slice_path)
         mask_np_array = self.get_mask(local_slice_path)
+
+        if random.random() < 0.5:
+            # Data augmentation. Randomly flip the image and mask horizontally.
+            slice_np_array = slice_np_array[..., :, ::-1]
+            mask_np_array = mask_np_array[..., :, ::-1]
 
         processed_slice_np_array = self.dataprocessing(slice_np_array)
 
