@@ -62,10 +62,10 @@ def extract_tar_gz(tar_gz_path: str, output_path: str):
     file.close()
 
 
-def numpy_to_nifti(np_array: np.ndarray, output_path: str):
-    assert not os.path.exists(
-        output_path
-    ), f"output path {output_path} does already exist"
+def numpy_to_nifti(np_array, output_path: str):
+    assert not os.path.exists(output_path), (
+        f"output path {output_path} does already exist"
+    )
 
     # Load the data
     data = nib.nifti1.Nifti1Image(np_array, np.eye(4), dtype=np_array.dtype)
@@ -76,9 +76,9 @@ def numpy_to_nifti(np_array: np.ndarray, output_path: str):
 def tif_to_nifti(input_path: str, output_path: str):
     # TODO: This function does not work properly. Fix it or remove it.
     assert os.path.exists(input_path), f"input path {input_path} does not exist"
-    assert not os.path.exists(
-        output_path
-    ), f"output path {output_path} does already exist"
+    assert not os.path.exists(output_path), (
+        f"output path {output_path} does already exist"
+    )
 
     # Load the data
     data = nib.nifti1.Nifti1Image.from_filename(input_path)
@@ -209,7 +209,7 @@ class NiftiDataFolder(DataFolder):
                 preserve_range=preserve_range,
             )
             print(
-                f"Resized file {count+1}/{len(self.data_path_list)}. Saved at {resized_nifti_path}"
+                f"Resized file {count + 1}/{len(self.data_path_list)}. Saved at {resized_nifti_path}"
             )
 
     def split_all_volumes_into_frames(self, output_folder_path: str):
@@ -220,7 +220,7 @@ class NiftiDataFolder(DataFolder):
         for count, f_path in enumerate(self.data_path_list):
             nifti_vol_to_frames(f_path, output_folder_path)
             print(
-                f"Split volume {count+1}/{len(self.data_path_list)}. Saved at {output_folder_path}"
+                f"Split volume {count + 1}/{len(self.data_path_list)}. Saved at {output_folder_path}"
             )
 
 
