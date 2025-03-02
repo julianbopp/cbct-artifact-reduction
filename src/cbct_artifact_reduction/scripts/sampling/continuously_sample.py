@@ -108,7 +108,7 @@ def sample_model(checkpoint_path):
 
                 sample_fn = diffusion.p_sample_loop_inpainting
 
-                slice_name = info["slice_name"]
+                slice_name = info["filename"]
                 logger.log(f"Generating sample_{slice_name} ({i}/{n})")
                 sample, _ = sample_fn(
                     model,
