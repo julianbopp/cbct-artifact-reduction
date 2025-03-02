@@ -68,7 +68,7 @@ class ImplantMaskCreator:
         )
         r = generateRotationAngle(
             0,
-            20,
+            5,
             random_state=random_state,
         )
 
