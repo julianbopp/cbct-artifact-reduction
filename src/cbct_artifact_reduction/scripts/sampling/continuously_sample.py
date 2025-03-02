@@ -105,6 +105,8 @@ def sample_model(checkpoint_path):
 
                 sample_fn = diffusion.p_sample_loop_inpainting
 
+                slice_name = info["slice_name"]
+                logger.log(f"Generating sample_{slice_name} ({i}/{n})")
                 sample, _ = sample_fn(
                     model,
                     masked_image,
@@ -119,7 +121,6 @@ def sample_model(checkpoint_path):
                     sample = torch.cat([sample, ground_truth, mask], dim=1).numpy()
                     sample_nifti_object = nib.nifti1.Nifti1Image(sample, None)
 
-                    slice_name = info["slice_name"]
                     if args.batch_size == 1:
                         info = dataset.clean_dict(info)
                     nib.save(
@@ -153,7 +154,7 @@ def monitor_checkpoints():
     observer.start()
 
     try:
-        print(f"Watching {CHECKPOINT_DIR} for new checkpoints...")
+        logger.log(f"Watching {CHECKPOINT_DIR} for new checkpoints...")
         while True:
             time.sleep(5)
     except KeyboardInterrupt:
