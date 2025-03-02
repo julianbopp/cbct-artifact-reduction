@@ -37,6 +37,7 @@ fixed_filenames = [
     filename for filename in fixed_filenames for _ in range(number_of_samples_per_slice)
 ]
 
+logger.configure(os.path.expanduser(args.log_dir))
 
 def create_dataloader():
     validation_dataloader = model_util.create_dataloader(
