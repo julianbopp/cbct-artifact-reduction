@@ -39,6 +39,7 @@ fixed_filenames = [
 
 logger.configure(os.path.expanduser(args.log_dir))
 
+
 def create_dataloader():
     validation_dataloader = model_util.create_dataloader(
         filenames=fixed_filenames,
@@ -92,7 +93,9 @@ def sample_model(checkpoint_path):
 
         # Create output directory OUTPUTDIR/checkpointname/
         model_output_dir = os.path.join(OUTPUT_DIR, os.path.basename(checkpoint_path))
-        os.mkdir(model_output_dir)
+
+        if not os.path.exists(model_output_dir):
+            os.mkdir(model_output_dir)
         logger.info("Output directory created at {}".format(model_output_dir))
 
         n = len(data)
