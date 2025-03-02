@@ -10,6 +10,7 @@ from cbct_artifact_reduction.csvcreator import (
     get_random_samples,
     get_random_slice_from_id,
 )
+from cbct_artifact_reduction.dataprocessing import filename_without_extension
 from cbct_artifact_reduction.guided_diffusion import dist_util, logger
 from cbct_artifact_reduction.guided_diffusion.script_util import (
     args_to_dict,
@@ -125,12 +126,24 @@ def sample_model(checkpoint_path):
                     sample = torch.cat([sample, ground_truth, mask], dim=1).numpy()
                     sample_nifti_object = nib.nifti1.Nifti1Image(sample, None)
 
+                    sample_output_dir = os.path.join(
+                        model_output_dir, filename_without_extension(slice_name)
+                    )
+                    if not os.path.exists(sample_output_dir):
+                        os.mkdir(sample_output_dir)
+
+                    i = "0"
+                    while os.path.exists(
+                        os.path.join(sample_output_dir, f"sample-{i}_{slice_name}")
+                    ):
+                        i = str(int(i) + 1)
+
                     nib.save(
                         sample_nifti_object,
-                        os.path.join(model_output_dir, f"sample_{slice_name}"),
+                        os.path.join(sample_output_dir, f"sample-{i}_{slice_name}"),
                     )
 
-                    logger.log(f"Saved sample_{slice_name} ({i}/{n})")
+                    logger.log(f"Saved sample-{i}_{slice_name} ({i}/{n})")
                     logger.log(info)
 
         logger.info("Freeing GPU memory")
