@@ -143,18 +143,18 @@ def sample_model(checkpoint_path):
                     if not os.path.exists(sample_output_dir):
                         os.mkdir(sample_output_dir)
 
-                    i = "0"
+                    j = "0"
                     while os.path.exists(
-                        os.path.join(sample_output_dir, f"sample-{i}_{slice_name}")
+                        os.path.join(sample_output_dir, f"sample-{j}_{slice_name}")
                     ):
-                        i = str(int(i) + 1)
+                        j = str(int(j) + 1)
 
                     nib.save(
                         sample_nifti_object,
-                        os.path.join(sample_output_dir, f"sample-{i}_{slice_name}"),
+                        os.path.join(sample_output_dir, f"sample-{j}_{slice_name}"),
                     )
 
-                    logger.log(f"Saved sample-{i}_{slice_name} ({i}/{n})")
+                    logger.log(f"Saved sample-{j}_{slice_name} ({i}/{n})")
                     logger.log(info)
 
         logger.info("Freeing GPU memory")
