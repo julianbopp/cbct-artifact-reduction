@@ -131,7 +131,7 @@ def sample_model(checkpoint_path):
 
                     nib.save(
                         sample_nifti_object,
-                        os.path.join(OUTPUT_DIR, f"sample_{slice_name}"),
+                        os.path.join(model_output_dir, f"sample_{slice_name}"),
                     )
 
                     logger.log(f"Saved sample_{slice_name} ({i}/{n})")
