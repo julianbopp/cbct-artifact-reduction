@@ -73,7 +73,7 @@ def sample_model(checkpoint_path):
         )
         try:
             model.load_state_dict(
-                dist_util.load_state_dict(checkpoint_path, map_location=DEVICE)
+                dist_util.load_state_dict(checkpoint_path, map_location="cpu")
             )
         except:
             logger.error("Could not load model. Trying to load again on CPU.")
@@ -82,6 +82,7 @@ def sample_model(checkpoint_path):
                     checkpoint_path, map_location=torch.device("cpu")
                 )
             )
+        model.to(DEVICE)
         model.eval()
         logger.info(f"Model is on device: {next(model.parameters()).device}")
         logger.info("Model loaded")
