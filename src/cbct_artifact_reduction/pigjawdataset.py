@@ -213,8 +213,8 @@ class InpaintingSliceDataset(Dataset):
 
         if random.random() < 0.5:
             # Data augmentation. Randomly flip the image and mask horizontally.
-            slice_np_array = slice_np_array[..., :, ::-1]
-            mask_np_array = mask_np_array[..., :, ::-1]
+            slice_np_array = slice_np_array.copy()[..., :, ::-1]
+            mask_np_array = mask_np_array.copy()[..., :, ::-1]
 
         processed_slice_np_array = self.dataprocessing(slice_np_array)
 
