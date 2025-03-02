@@ -7,7 +7,6 @@ import cbct_artifact_reduction.pigjawdataset as dataset
 import nibabel as nib
 import torch
 from cbct_artifact_reduction.csvcreator import (
-    get_random_samples,
     get_random_slice_from_id,
 )
 from cbct_artifact_reduction.dataprocessing import filename_without_extension
@@ -25,7 +24,7 @@ args = argparser_config.create_sample_argparser().parse_args()
 logger.configure(os.path.expanduser(args.log_dir))
 
 
-fixed_ids = get_random_samples("data.csv", 1, mandibles="1", implants="0").id.tolist()
+fixed_ids = [10, 20, 30, 40, 50, 60, 70, 80]
 logger.log(f"Fixed IDs: {fixed_ids}")
 
 
