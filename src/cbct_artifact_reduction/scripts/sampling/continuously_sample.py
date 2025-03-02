@@ -145,12 +145,16 @@ def sample_model(checkpoint_path):
 
 
 class CheckpointHandler(FileSystemEventHandler):
+    list_of_checkpoints_sampled = []
+
     def on_modified(self, event):
         if isinstance(event.src_path, str):
-            if event.src_path.endswith(".pt") and "opt" not in event.src_path:
-                # src_path is a path to a modelXXXXX.pt or ema_X.XXXX_XXXX.pt file
-                time.sleep(60)  # Small delay to ensure the file is fully written
-                sample_model(event.src_path)
+            if event.src_path not in self.list_of_checkpoints_sampled:
+                if event.src_path.endswith(".pt") and "opt" not in event.src_path:
+                    # src_path is a path to a modelXXXXX.pt or ema_X.XXXX_XXXX.pt file
+                    time.sleep(60)  # Small delay to ensure the file is fully written
+                    sample_model(event.src_path)
+                    list_of_checkpoints_sampled.append(event.src_path)
 
 
 def monitor_checkpoints():
