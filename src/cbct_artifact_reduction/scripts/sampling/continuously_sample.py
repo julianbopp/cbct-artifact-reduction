@@ -54,6 +54,14 @@ def create_dataloader():
 CHECKPOINT_DIR = os.path.expanduser("~/logs/")  # Directory containing checkpoints
 OUTPUT_DIR = os.path.expanduser("~/samples/")  # Directory to save outputs
 
+if os.path.exists(OUTPUT_DIR):
+    i = input(
+        f"Output directory {OUTPUT_DIR} already exists. Do you want to overwrite it? (y/n)"
+    )
+    if i == "n":
+        OUTPUT_DIR = input("Please enter a new output directory (~ is allowed): ")
+    OUTPUT_DIR = os.path.expanduser(OUTPUT_DIR)  # Directory to save outputs
+
 
 def sample_model(checkpoint_path):
     lock = FileLock("/tmp/julian.bopp.model_sampling.lock")  # Create a lock file
