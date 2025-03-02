@@ -66,6 +66,39 @@ def filter_csv(file_path, output_path=None, exclude_filled_radiation=False, **fi
     return df
 
 
+def get_random_samples(file_path, n=5, **filters):
+    """
+    Returns n random samples from a CSV file, applying column-value filters if needed.
+
+    :param file_path: Path to the CSV file.
+    :param n: Number of random samples to return (default = 5).
+    :param filters: Column-value pairs for filtering,
+                    e.g., scanner="axeos" or scanner="axeos,planmeca".
+    :return: A Pandas DataFrame of the sampled rows.
+    """
+    # Read the CSV and store original data types
+    df = pd.read_csv(file_path)
+    original_dtypes = df.dtypes
+
+    # Apply filters
+    for column, value in filters.items():
+        if column in df.columns:
+            # If the value is a comma-separated string, split into a list
+            if isinstance(value, str) and "," in value:
+                value_list = [v.strip() for v in value.split(",")]
+                df = df[df[column].astype(str).isin(value_list)]
+            else:
+                df = df[df[column].astype(str) == str(value)]
+
+    # Sample rows (ensuring we don't request more than available)
+    df = df.sample(n=min(n, len(df)), random_state=42)
+
+    # Restore original data types
+    df = df.astype(original_dtypes)
+
+    return df
+
+
 def get_random_entries(file_path, n, exclude_filled_radiation=False, **filters):
     """
     Returns n random entries from the filtered CSV data.
