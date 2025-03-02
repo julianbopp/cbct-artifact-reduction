@@ -21,7 +21,7 @@ def create_binary_threshold_mask(np_array, threshold):
 
 
 def remove_outliers(
-    img: np.ndarray, lower_quantile: float = 0.001, upper_quantile: float = 0.999
+    img: np.ndarray, lower_quantile: float = 0.005, upper_quantile: float = 0.995
 ):
     """Clip the given image to the lower and upper quantiles."""
 
