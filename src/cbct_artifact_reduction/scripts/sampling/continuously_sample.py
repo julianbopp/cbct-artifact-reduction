@@ -7,7 +7,7 @@ import cbct_artifact_reduction.pigjawdataset as dataset
 import nibabel as nib
 import torch
 from cbct_artifact_reduction.csvcreator import (
-    get_random_entries_by_scanner_fov_mandible,
+    get_random_samples,
     get_random_slice_from_id,
 )
 from cbct_artifact_reduction.guided_diffusion import dist_util, logger
@@ -23,11 +23,7 @@ from watchdog.observers import Observer
 args = argparser_config.create_sample_argparser().parse_args()
 
 
-fixed_ids = get_random_entries_by_scanner_fov_mandible(
-    "data.csv",
-    1,
-    exclude_mandibles=[2, 3, 4, 5, 10, 7, 9, 12],
-).id.tolist()
+fixed_ids = get_random_samples("data.csv", 1, mandibles="1", implants="0").id.tolist()
 
 fixed_filenames = get_random_slice_from_id("data.csv", fixed_ids)
 
