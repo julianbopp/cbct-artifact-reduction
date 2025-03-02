@@ -83,6 +83,7 @@ def sample_model(checkpoint_path):
                 )
             )
         model.eval()
+        logger.info(f"Model is on device: {next(model.parameters()).device}")
         logger.info("Model loaded")
 
         data = create_dataloader()
