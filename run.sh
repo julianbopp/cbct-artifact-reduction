@@ -10,8 +10,10 @@ elif [[ "$1" == "train" ]]; then
     echo "Input: train. OK."
 elif [[ "$1" == "resume" ]]; then
     echo "Input: resume. OK."
+elif [[ "$1" == "watch" ]]; then
+    echo "Input: watch. OK."
 else
-    echo "Usage: ./run train|sample|resume"
+    echo "Usage: ./run train|sample|resume|watch"
     echo "Invalid Input. Leaving..."
     exit 1
 fi
@@ -29,9 +31,10 @@ TRAIN_SCRIPT="src/cbct_artifact_reduction/scripts/train_test.py"
 
 # SAMPLING VARIABLES
 SAMPLE_SCRIPT="src/cbct_artifact_reduction/scripts/sample_test.py"
+CONTINUOUSLY_SAMPLE_SCRIPT="src/cbct_artifact_reduction/scripts/sampling/continuously_sample.py"
 SAMPLE_FLAGS="--random_masks False"
 
-MODEL_PATH="/home/julian.bopp/logs/model095000.pt"
+MODEL_PATH="/home/julian.bopp/logs/model000000.pt"
 
 # PRINTING VARIABLES
 echo "Logging to: $LOG_DIR"
@@ -49,7 +52,6 @@ echo "--------------------"
 echo "SAMPLE_FLAGS:"
 echo $SAMPLE_FLAGS
 echo "--------------------"
-echo "TRAIN_FLAGS:"
 
 if [[ "$1" == "train" ]]; then
     echo "Starting training"
@@ -63,5 +65,9 @@ elif [[ "$1" == "resume" ]]; then
 elif [[ "$1" == "sample" ]]; then
     echo "Starting sampling"
     echo "Running $SAMPLE_SCRIPT"
-    python $SAMPLE_SCRIPT --model_path $MODEL_PATH $MODEL_FLAGS $DIFFUSION_FLAGS
+    python $SAMPLE_SCRIPT --model_path $MODEL_PATH $MODEL_FLAGS $DIFFUSION_FLAGS $SAMPLE_FLAGS
+elif [[ "$1" == "watch" ]]; then
+    echo "Starting continuously sampling"
+    echo "Running $CONTINUOUSLY_SAMPLE_SCRIPT"
+    python $CONTINUOUSLY_SAMPLE_SCRIPT $MODEL_FLAGS $DIFFUSION_FLAGS $SAMPLE_FLAGS
 fi
