@@ -22,19 +22,23 @@ from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
 args = argparser_config.create_sample_argparser().parse_args()
+logger.configure(os.path.expanduser(args.log_dir))
 
 
 fixed_ids = get_random_samples("data.csv", 1, mandibles="1", implants="0").id.tolist()
+logger.log(f"Fixed IDs: {fixed_ids}")
+
 
 fixed_filenames = get_random_slice_from_id("data.csv", fixed_ids)
+logger.log(f"Fixed filenames: {fixed_filenames}")
+
 
 number_of_samples_per_slice = 5
+logger.log(f"Number of samples per slice: {number_of_samples_per_slice}")
 
 fixed_filenames = [
     filename for filename in fixed_filenames for _ in range(number_of_samples_per_slice)
 ]
-
-logger.configure(os.path.expanduser(args.log_dir))
 
 
 def create_dataloader():
