@@ -109,6 +109,9 @@ def sample_model(checkpoint_path):
 
                 sample_fn = diffusion.p_sample_loop_inpainting
 
+                if args.batch_size == 1:
+                    info = dataset.clean_dict(info)
+
                 slice_name = info["filename"]
                 logger.log(f"Generating sample_{slice_name} ({i}/{n})")
                 sample, _ = sample_fn(
@@ -125,8 +128,6 @@ def sample_model(checkpoint_path):
                     sample = torch.cat([sample, ground_truth, mask], dim=1).numpy()
                     sample_nifti_object = nib.nifti1.Nifti1Image(sample, None)
 
-                    if args.batch_size == 1:
-                        info = dataset.clean_dict(info)
                     nib.save(
                         sample_nifti_object,
                         os.path.join(OUTPUT_DIR, f"sample_{slice_name}"),
