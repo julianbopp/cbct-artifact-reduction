@@ -154,7 +154,8 @@ class CheckpointHandler(FileSystemEventHandler):
                     # src_path is a path to a modelXXXXX.pt or ema_X.XXXX_XXXX.pt file
                     time.sleep(60)  # Small delay to ensure the file is fully written
                     sample_model(event.src_path)
-                    list_of_checkpoints_sampled.append(event.src_path)
+
+                    self.list_of_checkpoints_sampled.append(event.src_path)
 
 
 def monitor_checkpoints():
