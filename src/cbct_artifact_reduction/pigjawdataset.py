@@ -103,6 +103,7 @@ class InpaintingSliceDataset(Dataset):
         filenames: str | list[str],
         slice_directory_path: str,
         random_masks: bool = True,
+        augment_data: bool = True,
     ) -> None:
         """Initializes the dataset.
 
@@ -111,6 +112,7 @@ class InpaintingSliceDataset(Dataset):
             filenames list[str]: The list of filenames to load. Can be a path to a csv file or a list of filenames.
             relative_slice_directory_path (str): The relative path to the remote/local directory containing the slices.
             random_masks (bool): Whether to generate random masks or use the random generated masks with the hash of the file name.
+            augment_data (bool): Whether to augment the data with flips.
         """
 
         super().__init__()
@@ -118,6 +120,7 @@ class InpaintingSliceDataset(Dataset):
         self.filenames = filenames
         self.relative_slice_directory_path = slice_directory_path
         self.random_masks = random_masks
+        self.augment_data = augment_data
 
         self.data_extension = ".nii.gz"
         self.dataset = self.prepare_dataset()
@@ -211,10 +214,11 @@ class InpaintingSliceDataset(Dataset):
         slice_np_array = single_nifti_to_numpy(local_slice_path)
         mask_np_array = self.get_mask(local_slice_path)
 
-        if random.random() < 0.5:
-            # Data augmentation. Randomly flip the image and mask horizontally.
-            slice_np_array = slice_np_array[..., :, ::-1].copy()
-            mask_np_array = mask_np_array[..., :, ::-1].copy()
+        if self.augment_data:
+            if random.random() < 0.5:
+                # Data augmentation. Randomly flip the image and mask horizontally.
+                slice_np_array = slice_np_array[..., :, ::-1].copy()
+                mask_np_array = mask_np_array[..., :, ::-1].copy()
 
         processed_slice_np_array = self.dataprocessing(slice_np_array)
 

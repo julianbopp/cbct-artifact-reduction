@@ -63,7 +63,12 @@ def load_model(model_path, device=None, sample=False, **kwargs):
 
 
 def create_dataloader(
-    filenames, random_masks: bool, lakefs_folder: str, batch_size: int, shuffle: bool
+    filenames,
+    random_masks: bool,
+    lakefs_folder: str,
+    batch_size: int,
+    shuffle: bool,
+    augment_data: bool,
 ):
     client = lakefs_own.CustomBoto3Client(f"{cfg.LAKEFS_DATA_REPOSITORY}")
     inpaintingSliceDataset = dataset.InpaintingSliceDataset(
@@ -71,6 +76,7 @@ def create_dataloader(
         filenames,
         lakefs_folder,
         random_masks=random_masks,
+        augment_data=augment_data,
     )
 
     dataloader = DataLoader(

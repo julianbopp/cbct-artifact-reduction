@@ -47,6 +47,7 @@ def create_dataloader():
         lakefs_folder=args.lakefs_folder,
         batch_size=1,
         shuffle=False,
+        augment_data=args.augment_data,
     )
     return validation_dataloader
 
