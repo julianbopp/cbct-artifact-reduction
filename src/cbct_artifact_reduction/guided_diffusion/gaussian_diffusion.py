@@ -632,12 +632,7 @@ class GaussianDiffusion:
                     model_kwargs=model_kwargs,
                 )
                 yield out
-                if i in [0, 1, 2]:
-                    img = out["pred_xstart"]
-                else:
-                    img = out[
-                        "sample"
-                    ]  # This is the reduced noise image and has 1 channel
+                img = out["sample"]  # This is the reduced noise image and has 1 channel
 
     def p_sample_loop_progressive(
         self,
