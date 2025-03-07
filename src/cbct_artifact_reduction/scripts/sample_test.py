@@ -21,7 +21,7 @@ def main():
     dist_util.setup_dist()
     logger.configure(os.path.expanduser(args.log_dir))
 
-    SAMPLE_DIR = os.path.join(os.path.expanduser("~/"), "samples")
+    SAMPLE_DIR = os.path.expanduser(args.log_dir)
 
     today = datetime.now()
     logger.log(f"SAMPLING {today}")
