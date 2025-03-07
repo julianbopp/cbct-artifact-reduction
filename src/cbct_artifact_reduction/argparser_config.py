@@ -32,6 +32,7 @@ def create_train_argparser():
         noise_schedule="linear",
         rescale_learned_sigmas=False,
         rescale_timesteps=False,
+        lakefs_folder="processed_data/frames/256x256",
         data_csv="training_data.csv",
         augment_data=True,
     )
@@ -43,21 +44,14 @@ def create_train_argparser():
 
 def create_sample_argparser():
     defaults = dict(
-        data_dir="",
         log_dir="~/samples/",
-        # gt_dir="",
-        adapted_samples="",
-        sub_batch=16,
         clip_denoised=True,
-        num_samples=1,
         batch_size=1,
         use_ddim=False,
         model_path="",
-        num_ensemble=1,
         image_size=256,
         random_masks=True,
         data_csv="sample_data.csv",
-        return_item_info=True,
         lakefs_folder="processed_data/frames/256x256",
         schedule_sampler="uniform",
         lr=1e-4,
