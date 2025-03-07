@@ -52,8 +52,8 @@ def create_dataloader():
     return validation_dataloader
 
 
-CHECKPOINT_DIR = os.path.expanduser(args.log_dir)  # Directory containing checkpoints
-OUTPUT_DIR = os.path.expanduser("~/samples/")  # Directory to save outputs
+CHECKPOINT_DIR = os.path.expanduser(args.model_dir)  # Directory containing checkpoints
+OUTPUT_DIR = os.path.expanduser("~/continuously_sample/")  # Directory to save outputs
 
 if os.path.exists(OUTPUT_DIR):
     i = input(
