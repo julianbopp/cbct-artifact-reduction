@@ -38,7 +38,7 @@ CONTINUOUSLY_SAMPLE_SCRIPT="src/cbct_artifact_reduction/scripts/sampling/continu
 MODEL_PATH="/home/julian.bopp/logs/model000000.pt"
 
 # Catch all extra arguments after train|sample|resume|watch
-EXTRA_ARGS="${@:2}"
+EXTRA_ARGS="${*:2}"
 
 # PRINTING VARIABLES
 echo "Logging to: $LOG_DIR"
