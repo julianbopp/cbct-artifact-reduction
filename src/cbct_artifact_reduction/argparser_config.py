@@ -47,7 +47,7 @@ def create_sample_argparser():
     defaults = dict(
         log_dir="samples",
         model_dir="models",
-        clip_denoised=True,
+        clip_denoised=False,
         batch_size=1,
         use_ddim=False,
         model_path="",
