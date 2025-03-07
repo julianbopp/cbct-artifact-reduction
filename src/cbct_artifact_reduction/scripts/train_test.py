@@ -53,7 +53,10 @@ def main():
     for epoch in range(num_epochs):
         logger.log(f"epoch {epoch + 1}/{num_epochs}")
         dataloader = DataLoader(
-            inpaintingSliceDataset, batch_size=args.batch_size, shuffle=True
+            inpaintingSliceDataset,
+            batch_size=args.batch_size,
+            shuffle=True,
+            num_workers=args.batch_size,
         )
         data = iter(dataloader)
 
