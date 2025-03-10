@@ -104,6 +104,7 @@ class InpaintingSliceDataset(Dataset):
         slice_directory_path: str,
         random_masks: bool = True,
         augment_data: bool = True,
+        log_transform: bool = False,
     ) -> None:
         """Initializes the dataset.
 
@@ -113,6 +114,7 @@ class InpaintingSliceDataset(Dataset):
             relative_slice_directory_path (str): The relative path to the remote/local directory containing the slices.
             random_masks (bool): Whether to generate random masks or use the random generated masks with the hash of the file name.
             augment_data (bool): Whether to augment the data with flips.
+            log_transform (bool): Whether to apply scanner specific log transformation.
         """
 
         super().__init__()
@@ -121,6 +123,7 @@ class InpaintingSliceDataset(Dataset):
         self.relative_slice_directory_path = slice_directory_path
         self.random_masks = random_masks
         self.augment_data = augment_data
+        self.log_transform = log_transform
 
         self.data_extension = ".nii.gz"
         self.dataset = self.prepare_dataset()
@@ -220,7 +223,9 @@ class InpaintingSliceDataset(Dataset):
                 slice_np_array = slice_np_array[..., :, ::-1].copy()
                 mask_np_array = mask_np_array[..., :, ::-1].copy()
 
-        processed_slice_np_array = self.dataprocessing(slice_np_array)
+        processed_slice_np_array = self.dataprocessing(
+            slice_np_array, item_info, self.log_transform
+        )
 
         item_info = replace_none_with_default(item_info, default_value="")
         item = {
@@ -234,30 +239,32 @@ class InpaintingSliceDataset(Dataset):
     def dataprocessing(
         self,
         np_array: np.ndarray,
-        scanner: str | None = None,
-        fov: str | None = None,
-        scanner_processing: bool = False,
+        item_info: dict = {},
+        log_transform: bool = False,
     ) -> np.ndarray:
-        """Preprocesses the numpy array by normalizing it and removing outliers. Addiotionally, if scanner and fov are provided, the array is preprocessed accordingly.
+        """Preprocesses the numpy array by normalizing it and removing outliers.
+        Additionally, apply scanner specific preprocessing if log_transform is True.
 
         Args:
             nparray (np.ndarray): The numpy array to preprocess.
-            scanner (str, optional): The scanner used for the slice. Defaults to None.
-            fov (str, optional): The field of view of the slice. Defaults to None.
-            scanner_processing (bool, optional): Whether to apply scanner specific preprocessing. Defaults to False.
+            item_info (dict, optional): The item info dictionary.
+            log_transform (bool, optional): Whether to apply scanner specific preprocessing.
         Returns:
             np.ndarray: The preprocessed numpy array.
         """
-        if scanner_processing:
-            if scanner is not None and fov is not None:
-                if scanner == "planmeca" and fov == "small":
-                    np_array = -np.log(np_array / (3591 * 2.27))
-                elif scanner == "planmeca" and fov == "large":
-                    np_array = -np.log(np_array / (4326 * 2.27))
-                elif scanner == "axeos":
-                    np_array = -np.log(np_array / (2 * 10**16))
-                elif scanner == "accuitomo" or "x800":
-                    np_array = -np.log(np_array / (np_array.max()))
+
+        if log_transform:
+            scanner = item_info.get("scanner")
+            fov = item_info.get("fov")
+
+            if scanner == "planmeca" and fov == "small":
+                np_array = -np.log(np_array / (3591 * 2.27))
+            elif scanner == "planmeca" and fov == "large":
+                np_array = -np.log(np_array / (4326 * 2.27))
+            elif scanner == "axeos":
+                np_array = -np.log(np_array / (2 * 10**16))
+            elif scanner == "accuitomo" or "x800":
+                np_array = -np.log(np_array / (np_array.max()))
 
         outliers_removed = remove_outliers(np_array)
         normalized = min_max_normalize(outliers_removed)
