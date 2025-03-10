@@ -36,6 +36,7 @@ def create_train_argparser():
         lakefs_folder="processed_data/frames/256x256",
         data_csv="training_data.csv",
         augment_data=True,
+        log_transform=True,
     )
     defaults.update(script_util.model_and_diffusion_defaults())
     parser = argparse.ArgumentParser()
@@ -79,6 +80,7 @@ def create_sample_argparser():
         rescale_learned_sigmas=False,
         rescale_timesteps=False,
         augment_data=False,
+        log_transform=True,
     )
     defaults.update(script_util.model_and_diffusion_defaults())  # type: ignore
     parser = argparse.ArgumentParser()
