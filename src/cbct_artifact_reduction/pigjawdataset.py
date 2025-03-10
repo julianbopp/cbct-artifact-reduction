@@ -256,9 +256,8 @@ class InpaintingSliceDataset(Dataset):
                     np_array = -np.log(np_array / (4326 * 2.27))
                 elif scanner == "axeos":
                     np_array = -np.log(np_array / (2 * 10**16))
-                else:
-                    # TODO: Add more preprocessing for other scanners. Waiting for the details from Susanne.
-                    print(f"No extra preprocessing for scanner {scanner} and fov {fov}")
+                elif scanner == "accuitomo" or "x800":
+                    np_array = -np.log(np_array / (np_array.max()))
 
         outliers_removed = remove_outliers(np_array)
         normalized = min_max_normalize(outliers_removed)
