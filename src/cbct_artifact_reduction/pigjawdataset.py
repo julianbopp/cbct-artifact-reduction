@@ -130,6 +130,12 @@ class InpaintingSliceDataset(Dataset):
         # TODO: Don't hardcode the resolution
         self.mask_creator = imc.ImplantMaskCreator((256, 256))
 
+        print("Dataset Information:")
+        print(f"- Dataset length: {len(self.dataset)}")
+        print(f"- Random masks: {self.random_masks}")
+        print(f"- Augment data: {self.augment_data}")
+        print(f"- Log transform: {self.log_transform}")
+
     def prepare_dataset(self) -> list[dict[str, Any]]:
         """Create a list of data points, each containing the path to the slice and information about the data to which the slice belongs.
 
