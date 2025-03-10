@@ -45,6 +45,8 @@ def main():
         os.path.join(cfg.ROOT_DIR, args.data_csv),
         "processed_data/frames/256x256",
         random_masks=args.random_masks,
+        augment_data=args.augment_data,
+        log_transform=args.log_transform,
     )
 
     num_epochs = args.num_epochs
