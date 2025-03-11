@@ -245,8 +245,8 @@ class InpaintingSliceDataset(Dataset):
 
         item_info = replace_none_with_default(item_info, default_value="")
         item = {
-            "slice": processed_slice_np_array[np.newaxis, ...],
-            "mask": mask_np_array[np.newaxis, ...],
+            "slice": processed_slice_np_array[np.newaxis, ...].astype(np.float32),
+            "mask": mask_np_array[np.newaxis, ...].astype(np.float32),
             "info": item_info,
         }
 
