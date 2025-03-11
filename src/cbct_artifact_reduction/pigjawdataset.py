@@ -229,8 +229,8 @@ class InpaintingSliceDataset(Dataset):
         if contains_zero:
             print(f"Slice {item_path} contains zeros. Deleting item from dataset.")
             self.dataset.pop(idx)
-            if idx == len(self.dataset):
-                idx = idx - 1
+            if idx >= len(self.dataset):
+                idx = len(self.dataset) - 1
             return self.__getitem__(idx)
 
         slice_mean_value = slice_np_array.mean()
@@ -239,8 +239,8 @@ class InpaintingSliceDataset(Dataset):
                 f"Slice {item_path} has mean value {slice_mean_value}. Deleting item from dataset."
             )
             self.dataset.pop(idx)
-            if idx == len(self.dataset):
-                idx = idx - 1
+            if idx >= len(self.dataset):
+                idx = len(self.dataset) - 1
             return self.__getitem__(idx)
 
         if self.augment_data:
