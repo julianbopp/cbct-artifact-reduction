@@ -218,8 +218,8 @@ class InpaintingSliceDataset(Dataset):
         if local_slice_path is None:
             print(f"File {item_path} not found on lakeFS. Deleting item from dataset.")
             self.dataset.pop(idx)
-            if idx == len(self.dataset):
-                idx = idx - 1
+            if idx >= len(self.dataset):
+                idx = len(self.dataset) // 2
             return self.__getitem__(idx)
 
         slice_np_array = single_nifti_to_numpy(local_slice_path)
@@ -230,7 +230,7 @@ class InpaintingSliceDataset(Dataset):
             print(f"Slice {item_path} contains zeros. Deleting item from dataset.")
             self.dataset.pop(idx)
             if idx >= len(self.dataset):
-                idx = len(self.dataset) - 1
+                idx = len(self.dataset) // 2
             return self.__getitem__(idx)
 
         slice_mean_value = slice_np_array.mean()
@@ -240,7 +240,7 @@ class InpaintingSliceDataset(Dataset):
             )
             self.dataset.pop(idx)
             if idx >= len(self.dataset):
-                idx = len(self.dataset) - 1
+                idx = len(self.dataset) // 2
             return self.__getitem__(idx)
 
         if self.augment_data:
