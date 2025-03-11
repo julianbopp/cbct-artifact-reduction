@@ -225,6 +225,14 @@ class InpaintingSliceDataset(Dataset):
         slice_np_array = single_nifti_to_numpy(local_slice_path)
         mask_np_array = self.get_mask(local_slice_path)
 
+        contains_zero = np.any(slice_np_array == 0)
+        if contains_zero:
+            print(f"Slice {item_path} contains zeros. Deleting item from dataset.")
+            self.dataset.pop(idx)
+            if idx == len(self.dataset):
+                idx = idx - 1
+            return self.__getitem__(idx)
+
         if self.augment_data:
             if random.random() < 0.5:
                 # Data augmentation. Randomly flip the image and mask horizontally.
