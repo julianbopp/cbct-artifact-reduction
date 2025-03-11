@@ -218,6 +218,8 @@ class InpaintingSliceDataset(Dataset):
         if local_slice_path is None:
             print(f"File {item_path} not found on lakeFS. Deleting item from dataset.")
             self.dataset.pop(idx)
+            if idx == len(self.dataset):
+                idx = idx - 1
             return self.__getitem__(idx)
 
         slice_np_array = single_nifti_to_numpy(local_slice_path)
