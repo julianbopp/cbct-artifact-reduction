@@ -1,6 +1,5 @@
-from abc import abstractmethod
-
 import math
+from abc import abstractmethod
 
 import numpy as np
 import torch as th
@@ -9,13 +8,13 @@ import torch.nn.functional as F
 
 from .fp16_util import convert_module_to_f16, convert_module_to_f32
 from .nn import (
+    avg_pool_nd,
     checkpoint,
     conv_nd,
     linear,
-    avg_pool_nd,
-    zero_module,
     normalization,
     timestep_embedding,
+    zero_module,
 )
 
 
@@ -33,7 +32,7 @@ class AttentionPool2d(nn.Module):
     ):
         super().__init__()
         self.positional_embedding = nn.Parameter(
-            th.randn(embed_dim, spacial_dim ** 2 + 1) / embed_dim ** 0.5
+            th.randn(embed_dim, spacial_dim**2 + 1) / embed_dim**0.5
         )
         self.qkv_proj = conv_nd(1, embed_dim, 3 * embed_dim, 1)
         self.c_proj = conv_nd(1, embed_dim, output_dim or embed_dim, 1)
@@ -277,9 +276,9 @@ class AttentionBlock(nn.Module):
         if num_head_channels == -1:
             self.num_heads = num_heads
         else:
-            assert (
-                channels % num_head_channels == 0
-            ), f"q,k,v channels {channels} is not divisible by num_head_channels {num_head_channels}"
+            assert channels % num_head_channels == 0, (
+                f"q,k,v channels {channels} is not divisible by num_head_channels {num_head_channels}"
+            )
             self.num_heads = channels // num_head_channels
         self.use_checkpoint = use_checkpoint
         self.norm = normalization(channels)
@@ -321,7 +320,7 @@ def count_flops_attn(model, _x, y):
     # We perform two matmuls with the same number of ops.
     # The first computes the weight matrix, the second computes
     # the combination of the value vectors.
-    matmul_ops = 2 * b * (num_spatial ** 2) * c
+    matmul_ops = 2 * b * (num_spatial**2) * c
     model.total_ops += th.DoubleTensor([matmul_ops])
 
 
@@ -640,9 +639,9 @@ class UNetModel(nn.Module):
         :param y: an [N] Tensor of labels, if class-conditional.
         :return: an [N x C x ...] Tensor of outputs.
         """
-        assert (y is not None) == (
-            self.num_classes is not None
-        ), "must specify y if and only if the model is class-conditional"
+        assert (y is not None) == (self.num_classes is not None), (
+            "must specify y if and only if the model is class-conditional"
+        )
 
         hs = []
         emb = self.time_embed(timestep_embedding(timesteps, self.model_channels))
