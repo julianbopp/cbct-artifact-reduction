@@ -205,7 +205,11 @@ class InpaintingSliceDataset(Dataset):
                 - info (optional): dict containing the data_info.
         """
 
-        assert 0 <= idx < self.__len__(), f"Index {idx} out of bounds"
+        try:
+            assert 0 <= idx < self.__len__(), f"Index {idx} out of bounds"
+        except AssertionError:
+            print(f"Index {idx} out of bounds. Returning other item.")
+            idx = len(self.dataset) // 2
 
         datapoint = self.dataset[idx]
 
