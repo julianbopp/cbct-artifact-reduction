@@ -161,7 +161,7 @@ class TrainLoop:
                 batch, cond = data["slice"], data["mask"]
             except StopIteration:
                 print("Epoch done")
-                return self.step
+                return self.step + self.resume_step
 
             batch = batch.float()
             cond = cond.float()
