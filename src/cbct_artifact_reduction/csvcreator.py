@@ -20,7 +20,9 @@ def get_random_slice_from_id(file_path, ids):
         "frames"
     ].to_dict()  # Create a lookup for frames per ID
 
-    slices = [f"{id}_{random.randint(0, id_to_frames.get(id, 0))}.nii.gz" for id in ids]
+    slices = [
+        f"{id}_{random.randint(0, id_to_frames.get(id, 0) - 1)}.nii.gz" for id in ids
+    ]
 
     return slices
 
