@@ -7,7 +7,7 @@ from cbct_artifact_reduction.config import ROOT_DIR
 from cbct_artifact_reduction.dataprocessing import (
     single_nifti_to_numpy,
 )
-from cbct_artifact_reduction.scripts.resulst.ssim_custom import ssim as ssim_mask
+from cbct_artifact_reduction.scripts.results.ssim_custom import ssim as ssim_mask
 from skimage.metrics import mean_squared_error as mse
 from skimage.metrics import peak_signal_noise_ratio as psnr
 from skimage.metrics import structural_similarity as ssim

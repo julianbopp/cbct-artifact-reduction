@@ -4,7 +4,7 @@ from datetime import datetime
 
 import cbct_artifact_reduction.config as cfg
 import cbct_artifact_reduction.pigjawdataset as dataset
-import cbct_artifact_reduction.scripts.resulst.create_sample_csv as create_sample_csv
+import cbct_artifact_reduction.scripts.results.create_sample_csv as create_sample_csv
 import nibabel as nib
 import torch
 from cbct_artifact_reduction import lakefs_own
@@ -38,7 +38,6 @@ def main():
     SAMPLE_DIR = os.path.expanduser(args.log_dir)
     folder = create_folder_based_on_start_time(SAMPLE_DIR)
     logger.configure(os.path.expanduser(folder))
-
 
     slice_list = create_sample_csv.get_sampling_names()
 
@@ -75,7 +74,6 @@ def main():
     if args.use_fp16:
         model.convert_to_fp16()
     model.eval()
-
 
     for item in data:
         ground_truth, mask, info = item["slice"], item["mask"], item["info"]
