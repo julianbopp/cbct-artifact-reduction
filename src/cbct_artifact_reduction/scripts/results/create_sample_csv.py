@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 data_csv = os.path.join(cfg.ROOT_DIR, "data.csv")
 random.seed(42)
 np.random.seed(42)
-N = 10
+N = 100
 axeos_small = csvcreator.get_random_entries(
     data_csv,
     1,
@@ -86,39 +86,31 @@ accuitomo_large = csvcreator.get_random_entries(
     fov="large",
 )
 
-axeos_small_slices = [
-    csvcreator.get_random_slice_from_id(data_csv, axeos_small["id"].tolist())[0]
-    for _ in range(N)
-]
-planmeca_small_slices = [
-    csvcreator.get_random_slice_from_id(data_csv, planmeca_small["id"].tolist())[0]
-    for _ in range(N)
-]
-x800_small_slices = [
-    csvcreator.get_random_slice_from_id(data_csv, x800_small["id"].tolist())[0]
-    for _ in range(N)
-]
-accuitomo_small_slices = [
-    csvcreator.get_random_slice_from_id(data_csv, accuitomo_small["id"].tolist())[0]
-    for _ in range(N)
-]
+axeos_small_slices = csvcreator.get_slice_ids(
+    data_csv, axeos_small["id"].tolist(), shuffle=True
+)[0:N]
+planmeca_small_slices = csvcreator.get_slice_ids(
+    data_csv, planmeca_small["id"].tolist(), shuffle=True
+)[0:N]
+x800_small_slices = csvcreator.get_slice_ids(
+    data_csv, x800_small["id"].tolist(), shuffle=True
+)[0:N]
+accuitomo_small_slices = csvcreator.get_slice_ids(
+    data_csv, accuitomo_small["id"].tolist(), shuffle=True
+)[0:N]
 
-axeos_large_slices = [
-    csvcreator.get_random_slice_from_id(data_csv, axeos_large["id"].tolist())[0]
-    for _ in range(N)
-]
-planmeca_large_slices = [
-    csvcreator.get_random_slice_from_id(data_csv, planmeca_large["id"].tolist())[0]
-    for _ in range(N)
-]
-x800_large_slices = [
-    csvcreator.get_random_slice_from_id(data_csv, x800_large["id"].tolist())[0]
-    for _ in range(N)
-]
-accuitomo_large_slices = [
-    csvcreator.get_random_slice_from_id(data_csv, accuitomo_large["id"].tolist())[0]
-    for _ in range(N)
-]
+axeos_large_slices = csvcreator.get_slice_ids(
+    data_csv, axeos_large["id"].tolist(), shuffle=True
+)[0:N]
+planmeca_large_slices = csvcreator.get_slice_ids(
+    data_csv, planmeca_large["id"].tolist(), shuffle=True
+)[0:N]
+x800_large_slices = csvcreator.get_slice_ids(
+    data_csv, x800_large["id"].tolist(), shuffle=True
+)[0:N]
+accuitomo_large_slices = csvcreator.get_slice_ids(
+    data_csv, accuitomo_large["id"].tolist(), shuffle=True
+)[0:N]
 print(axeos_small_slices)
 
 
@@ -143,12 +135,7 @@ client = lakefs_own.CustomBoto3Client(f"{cfg.LAKEFS_DATA_REPOSITORY}")
 new_list = []
 for slice in total_list:
     id = [int(slice.split("_")[0])]
-    try:
-        local_path = client.get_file(f"processed_data/frames/256x256/{slice}")
-    except:
-        total_list.remove(slice)
-        new_slice = csvcreator.get_random_slice_from_id(data_csv, id)[0]
-        total_list.append(new_slice)
+    local_path = client.get_file(f"processed_data/frames/256x256/{slice}")
 
     np_array = single_nifti_to_numpy(local_path)
     mean = np.mean(np_array)
@@ -156,7 +143,9 @@ for slice in total_list:
         print(f"Slice {slice} is bad. Searching new slice.")
 
         while mean < 10 or np.any(np_array == 0):
-            new_slice = csvcreator.get_random_slice_from_id(data_csv, id)[0]
+            new_slice = csvcreator.get_slice_ids(data_csv, id, shuffle=True)[0]
+            while new_slice in new_list:
+                new_slice = csvcreator.get_slice_ids(data_csv, id, shuffle=True)[0]
             local_path = client.get_file(f"processed_data/frames/256x256/{new_slice}")
             np_array = single_nifti_to_numpy(local_path)
             mean = np.mean(np_array)
@@ -164,6 +153,9 @@ for slice in total_list:
         new_list.append(new_slice)
     else:
         new_list.append(slice)
+
+
+print(len(new_list))
 
 
 def get_sampling_names():
@@ -183,7 +175,3 @@ inpaintingSliceDataset = dataset.InpaintingSliceDataset(
 dataloader = DataLoader(inpaintingSliceDataset, batch_size=8, shuffle=False)
 
 data = iter(dataloader)
-
-for item in data:
-    ground_truth, mask, info = item["slice"], item["mask"], item["info"]
-    print(info["filename"][0])
