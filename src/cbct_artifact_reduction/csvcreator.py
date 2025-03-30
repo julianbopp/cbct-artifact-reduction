@@ -7,9 +7,29 @@ import pandas as pd
 from cbct_artifact_reduction import utils
 
 
-def get_random_slice_from_id(file_path, ids):
+def get_slice_ids(file_path, id, shuffle=False):
     """
     Generates a list of slice filenames in the format 'id_randomFrameNumber.nii.gz'.
+
+    :param file_path: Path to the CSV file containing 'id' and 'frames' columns.
+    :param id: ID to generate slice filenames for.
+    :return: List of filenames in the format 'id_randomFrameNumber.nii.gz'.
+    """
+    df = pd.read_csv(file_path)
+
+    id_to_frames = df.set_index("id")["frames"].to_dict()
+    frames = id_to_frames[id[0]]
+
+    slices = [f"{id[0]}_{i}.nii.gz" for i in range(frames)]
+    if shuffle:
+        random.shuffle(slices)
+
+    return slices
+
+
+def get_random_slice_from_id(file_path, ids):
+    """
+    Generates a list of slice filenames in the format 'id_randomFrameNumber.nii.gz' and returns a random slice for each id from the list.
 
     :param file_path: Path to the CSV file containing 'id' and 'frames' columns.
     :param ids: List of IDs to generate slice filenames for.
