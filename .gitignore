@@ -177,5 +177,11 @@ config.yaml
 # Ignore .conda_config
 .conda_config
 
-# Ignore samples
+# Ignore samples and models
 samples/
+models/
+models2/
+models3/
+models4/
+models5/
+models6/
