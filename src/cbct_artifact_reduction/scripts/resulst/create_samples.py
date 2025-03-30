@@ -35,9 +35,10 @@ def create_folder_based_on_start_time(base_dir):
 def main():
     args = create_sample_argparser().parse_args()
     dist_util.setup_dist()
-    logger.configure(os.path.expanduser(args.log_dir))
-
     SAMPLE_DIR = os.path.expanduser(args.log_dir)
+    folder = create_folder_based_on_start_time(SAMPLE_DIR)
+    logger.configure(os.path.expanduser(folder))
+
 
     slice_list = create_sample_csv.get_sampling_names()
 
@@ -75,12 +76,9 @@ def main():
         model.convert_to_fp16()
     model.eval()
 
-    folder = create_folder_based_on_start_time(SAMPLE_DIR)
 
     for item in data:
         ground_truth, mask, info = item["slice"], item["mask"], item["info"]
-        if args.batch_size == 1:
-            info = dataset.clean_dict(info)
         masked_image = ground_truth * (1 - mask)
 
         model_kwargs = {}
